@@ -8,6 +8,7 @@ mobile<-read.table("data/MaxN_mobile.csv", header=T,sep=";",dec=".")[-33,]
 peumobile<-read.table("data/decompte_peumobile.csv", header=T, sep=";", dec=".")[,-16]
 recouvrement<-read.table("data/pourcentage_recouvrement.csv", header=T, sep=";",dec=".")[-147,]
 
+colnames(donnees_base)[5]<-"coordonnee_y"
 ########################################
 #physico
 #instalation package
@@ -48,13 +49,14 @@ layers_physico<-list_layers(dataset="Bio-ORACLE")
 #DOIT ETRE CONNECTER A INTERNET POUR ETRE EN MESURE DE FAIRE LEXTRACTION DES COUCHES
 #equalarea = projection lonlat
 #rasterstack= les different raster afficher comme un ensemble de couche et non comme une liste
-physico<-load_layers(layercodes=c("BO2_tempmean_bdmin","BO2_salinitymean_bdmin"), equalarea=FALSE, rasterstack=TRUE)
-
+temp<-load_layers(layercodes="BO2_tempmean_bdmin", equalarea=FALSE, rasterstack=TRUE)
+sal<-load_layers(layercodes="BO2_salinitymean_bdmin",equalarea=FALSE, rasterstack=TRUE)
 #data.frame selon les coordonnees des sites desirer
 my.sites <- data.frame(Id=donnees_base$ID, Lat=donnees_base$coordonnee_y, Lon=donnees_base$coordonnee_x)
 
 #extraction donnees pour chacun des points
 my.sites.physico<- data.frame(temperature=extract(temp,my.sites[,2:3]), salinite=extract(sal,my.sites[,2:3]))
+#prendre en consideration que se sont des temperature moyenne annuelle et donc il est normale-je pense-quelles soient negative 
  
 #ajout des donnees dans le document de donnees_bas
 donnees_complet<-cbind(donnees_base, my.sites.physico)
@@ -220,7 +222,7 @@ donnees_complet_sql <- '
 CREATE TABLE donnees_complet (
   ID INTEGER(4),
   num_image REAL(8),
-  date DATE(4)
+  date DATE(4),
   coordonnee_x REAL(8),
   coordonnee_y REAL(8),
   WPT INTEGER(4), 
@@ -232,7 +234,7 @@ CREATE TABLE donnees_complet (
   baited VACHAR(50),
   profondeur_m REAL(8),
   temp_moy REAL(8),
-  sal_moy REAL(8)
+  sal_moy REAL(8),
     PRIMARY KEY (ID)
 );'
 
