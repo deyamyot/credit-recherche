@@ -118,14 +118,14 @@ library(RSQLite)
 connexion <- dbConnect(SQLite(), dbname="E:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche/lien.db")
 
 #utiliser pour vider la table si problematique
-#dbSendQuery(connexion,"DROP TABLE mobile;") 
+dbSendQuery(connexion,"DROP TABLE mobile;") 
 
 mobile_sql <- '
 CREATE TABLE mobile (
   ID INTEGER(4),
-  crab_com INTEGER(4),
-  crab_a INTEGER(4),
-  crab_n INTEGER(4),
+  crabe_com INTEGER(4),
+  crabe_a INTEGER(4),
+  crabe_n INTEGER(4),
   bernard INTEGER(4),
   homard INTEGER(4), 
   buccin INTEGER(4),
@@ -148,7 +148,7 @@ dbSendQuery(connexion, mobile_sql)
 dbListTables(connexion)
 
 #utiliser pour vider la table si problematique
-#dbSendQuery(connexion,"DROP TABLE peumobile;") 
+dbSendQuery(connexion,"DROP TABLE peumobile;") 
 
 peumobile_sql <- '
 CREATE TABLE peumobile (
@@ -157,16 +157,21 @@ CREATE TABLE peumobile (
   nb_image INTEGER(4),
   num_image CHAR(50),
   nb_points_tot INTEGER(4),
+  nb_points_nonvisible INTEGER(4),
   oursin INTEGER(4), 
   dollars_sable INTEGER(4),
   anemone_p INTEGER(4),
-  anemon_r INTEGER(4),
+  anemone_r INTEGER(4),
+  anemone_pb INTEGER (4),
   concombre_v INTEGER(4),
   concombre_r INTEGER(4),
   ver_noire INTEGER(4),
   coraux_mou INTEGER(4),
   nb_espece INTEGER(4),
-    PRIMARY KEY (ID)
+    PRIMARY KEY (ID,temps,nb_image),
+    FOREIGN KEY (temps) REFERENCES recouvrement(temps),
+    FOREIGN KEY (nb_image) REFERENCES recouvrement(num_image)
+    
 );'
 
 dbSendQuery(connexion, peumobile_sql)
@@ -174,13 +179,12 @@ dbListTables(connexion)
 
 
 #utiliser pour vider la table si problematique
-#dbSendQuery(connexion,"DROP TABLE recouvrement;") 
+dbSendQuery(connexion,"DROP TABLE recouvrement;") 
 
 recouvrement_sql <- '
 CREATE TABLE recouvrement (
   ID INTEGER(4),
   temps INTEGER(4),
-  nb_image INTEGER(4),
   num_image INTERGER(4),
   type_cam VACHAR (1),
   nom_image CHAR (50),
@@ -208,20 +212,22 @@ CREATE TABLE recouvrement (
   p_algue_b REAL(8),
   p_coralline REAL(8),
   p_coquillage REAL(8),
-  p_nonbiotique REAL(8),
-    PRIMARY KEY (ID)
+  p_non_biotique REAL(8),
+    PRIMARY KEY (ID, temps,num_image),
+    FOREIGN KEY (temps) REFERENCES peumonile(temps),
+    FOREIGN KEY (num_image) REFERENCES peumobile(nb_image)
 );'
 
 dbSendQuery(connexion, recouvrement_sql)
 dbListTables(connexion)
 
 #utiliser pour vider la table si problematique
-#dbSendQuery(connexion,"DROP TABLE donnees_complet;") 
+dbSendQuery(connexion,"DROP TABLE donnees_complet;") 
 
 donnees_complet_sql <- '
 CREATE TABLE donnees_complet (
   ID INTEGER(4),
-  num_image REAL(8),
+  num_cam REAL(8),
   date DATE(4),
   coordonnee_x REAL(8),
   coordonnee_y REAL(8),
@@ -241,25 +247,65 @@ CREATE TABLE donnees_complet (
 dbSendQuery(connexion, donnees_complet_sql)
 dbListTables(connexion)
 
+#injection des donnees
+dbWriteTable(connexion, append = TRUE, name= "mobile", value= mobile, row.names = FALSE)
+dbWriteTable(connexion, append = TRUE, name = "peumobile", value = peumobile, row.names = FALSE)
+dbWriteTable(connexion, append = TRUE, name = "recouvrement", value = recouvrement, row.names = FALSE)
+dbWriteTable(connexion, append = TRUE, name = "donnees_complet", value = donnees_complet, row.names = FALSE)
+
+
+#===========================================
+#note de cours biometrie assite
+#===========================================
+#analyses
+#maximum likelihood
+#nous permet de trouver le modele ajuste qui decrit le mieux nos donnees
+#SSE
+#correspond a la variance dans les donnees qui nest pas expliquer par notre modele, on veut donc la reduire au maximum
+#SSY=SSr+SSE
+#SSY = observation i - observation moyenne
+#SSR (somme des carres du a la regression) = prediction i - observation moyenne
+#SSE = observation i - prediction  i
+#si les variables explicatives explique pas/peu y alors SSY=SSE
+#R^2 quantifie la proportion de la variance de y qui est prise en compte par les variables explicatives
+#R^2 = SSR/SSY = SSY-SSE /SSY
+#R^2 adj (ajuste) = 1- (1-R^2)((n-1)/n-k-1)
+#permet de tenir compte que la tendance a augmenter avec le nb de variables explicative **particulierement imoprtant si n est faible**
+
+#determiner sil y a presence dune correlation ou simplement dune relation dans la regression
+#si correlation=> r=1 ou -1
+
+#ANOVA
+#compare la variance inter-traitement à celle intra-traitement
+#si inter > intra alors la variable explicative a un effet plus important que l'erreur aleatoire et est donc susceptible d'influencer significativement la variable reponse
+#anova permet de comparer des modeles nicher entre eux
+#=================================================
+
+#=====================
+#test de correlation
+#====================
+#on veut savoir sil y a une correlation entre le nb_esp et les types dhabitats
+cor.test()
+#paarson, kendall, sperman
 
 #####Régression lineraire ???
 #critere de base --------------
 #prealable-existance ---
 #y est une variable que nous avons echantillonne de facon aleatoire
-moy_mobile=mean(mobile$nb_espece)
-moy_peumobile=mean(peumobile$nb_espece)
-var_mobile=var(mobile$nb_espece)
-var_peumobile=var(peumobile$nb_espece)
-mod_ind_mobile<-lm(mobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
-summary(mod_ind_mobile)
-anova(mod_ind_mobile)
-mod_ind_peumobile<-lm(peumobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
-summary(mod_ind_peumobile)
-anova(mod_ind_peumobile)
+#moy_mobile=mean(mobile$nb_espece)
+#moy_peumobile=mean(peumobile$nb_espece)
+#var_mobile=var(mobile$nb_espece)
+#var_peumobile=var(peumobile$nb_espece)
+#mod_ind_mobile<-lm(mobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
+#summary(mod_ind_mobile)
+#anova(mod_ind_mobile)
+#mod_ind_peumobile<-lm(peumobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
+#summary(mod_ind_peumobile)
+#anova(mod_ind_peumobile)
 #prealable-independance--
 #les donnees ne sont pas necessairement independantes puisque les pourcentages de granulometrie sont complementaire
 #le pourcentage de recouvrement non_biotique pourrait egalement etre interrelier au pourcentage de granulo puisquil correspond lors de lanalyse des images pour le recouvrement biotique a tout ce qui ne letait pas et qui etait donc inevitablement granulo
 #FAIRE TEST CORRELATION !!!!!!!!!pour determiner les variables explicatives a utiliser
 #est-ce que si non respect independance = glm ou impossible => ANOVA ?
 #quelles sont les sortent dANOVA ?
-mod_ind_mobile<-lm(mobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
+#mod_ind_mobile<-lm(mobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
