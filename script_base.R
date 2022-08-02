@@ -3,13 +3,15 @@ setwd("E:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche")
 
 #######################################
 #importation data
+
 donnees_base<-read.table("data/donnees_deploiment.csv", header=T,sep=";", dec=".")[-c(33:39),-c(14:15)]
 mobile<-read.table("data/MaxN_mobile.csv", header=T,sep=";",dec=".")[-33,]
 peumobile<-read.table("data/decompte_peumobile.csv", header=T, sep=";", dec=".")[,-16]
 recouvrement<-read.table("data/pourcentage_recouvrement.csv", header=T, sep=";",dec=".")[-147,]
 
 colnames(donnees_base)[5]<-"coordonnee_y"
-########################################
+
+
 #physico
 #instalation package
 install.packages("sdmpredictors")
@@ -49,8 +51,8 @@ layers_physico<-list_layers(dataset="Bio-ORACLE")
 #DOIT ETRE CONNECTER A INTERNET POUR ETRE EN MESURE DE FAIRE LEXTRACTION DES COUCHES
 #equalarea = projection lonlat
 #rasterstack= les different raster afficher comme un ensemble de couche et non comme une liste
-temp<-load_layers(layercodes="BO2_tempmean_bdmin", equalarea=FALSE, rasterstack=TRUE)
-sal<-load_layers(layercodes="BO2_salinitymean_bdmin",equalarea=FALSE, rasterstack=TRUE)
+temp<-load_layers(layercodes="BO2_tempmean_bdmin", equalarea=FALSE, rasterstack=TRUE) # moy de 2000 a 2014, en celsius
+sal<-load_layers(layercodes="BO2_salinitymean_bdmin",equalarea=FALSE, rasterstack=TRUE)# moy de de 2000 a 2014, en PSS (practical salinity scale)
 #data.frame selon les coordonnees des sites desirer
 my.sites <- data.frame(Id=donnees_base$ID, Lat=donnees_base$coordonnee_y, Lon=donnees_base$coordonnee_x)
 
@@ -64,13 +66,16 @@ colnames(donnees_complet)[14] <- "temp_moy"
 colnames(donnees_complet)[15] <- "sal_moy" 
 
 #####################################
-####Manipulation des donnees
+####Manipulation des donnees 
+####################################
 
 #calcul diversite---------
 #espece mobile
 mobile$nb_espece<-rowSums(mobile[,2:18]>0)
 #espece peumobile
 peumobile$nb_espece<-rowSums(peumobile[,7:15]>0)
+#espece nonmobile
+recouvrement$nb_espece<-rowSums(recouvrement[,8:12]>0)
 
 
 #totale par espece pour une la ligne de cage
@@ -213,6 +218,7 @@ CREATE TABLE recouvrement (
   p_coralline REAL(8),
   p_coquillage REAL(8),
   p_non_biotique REAL(8),
+  nb_espece INTERGER(4),
     PRIMARY KEY (ID, temps,num_image),
     FOREIGN KEY (temps) REFERENCES peumonile(temps),
     FOREIGN KEY (num_image) REFERENCES peumobile(nb_image)
@@ -254,6 +260,83 @@ dbWriteTable(connexion, append = TRUE, name = "recouvrement", value = recouvreme
 dbWriteTable(connexion, append = TRUE, name = "donnees_complet", value = donnees_complet, row.names = FALSE)
 
 
+#################################
+##### Analyse
+################################
+
+#on souhaite mettre la variable reponse = nb_esp en fonction des variables explicatives
+#(coordonnees,temp,sal,%recouvrment type de susbtrat)
+#et voir par la suite si on observe une difference dans les especes presentes
+
+#---------------------------
+#1-garder la valeur la plus elever pour le recouvrement du nb espece nonmobile
+#extraction de la donnee avec SQL
+max_valeur_rec_sql<-"
+SELECT ID, max(nb_espece) AS nb_espece
+FROM recouvrement 
+GROUP BY ID
+;"
+nb_esp_rec<-dbGetQuery(connexion, max_valeur_rec_sql)
+head(nb_esp_rec)
+
+#mm chose pour peumobile
+max_valeur_pm_sql<-"
+SELECT ID, max(nb_espece) AS nb_espece
+FROM peumobile
+GROUP BY ID
+;"
+nb_esp_rec<-dbGetQuery(connexion, max_valeur_pm_sql)
+head(nb_esp_rec)
+
+#creation de la table en SQL pour etre en mesure de faire la sum a la prochaine etape
+esp_rec_sql<-'
+CREATE TABLE nb_esp_rec (
+ ID INTERGER (4),
+ nb_espece INTEGER (4),
+ PRIMARY KEY (ID)
+);'
+
+dbSendQuery(connexion, esp_rec_sql)
+dbListTables(connexion)
+
+esp_pm_sql<-'
+CREATE TABLE nb_esp_pm(
+ ID INTERGER (4),
+ nb_espece INTEGER (4),
+ PRIMARY KEY (ID)
+);'
+
+dbSendQuery(connexion, esp_pm_sql)
+dbListTables(connexion)
+#------------------------------------
+#2-determiner le nb despeces total par point
+tot_espece_sql<- "
+SELECT mobile.ID, (mobile.nb_espece + nb_esp_rec.nb_espece + nb_esp_pm.nb_espece) AS total 
+FROM mobile
+JOIN nb_esp_rec on mobile.ID = nb_esp_rec.ID
+JOIN nb_esp_pm on mobile.ID = nb_esp_pm.ID
+;"
+
+nb_esp_tot<-dbGetQuery(connexion,tot_espece_sql)
+head(nb_esp_tot)
+# fonctionne supposement mais forme une table vide !!!!!!!!!!!!!!!!!!
+
+#------------------------------------
+#3-rassembler les donnees pour voir le facteur du gradient
+##!!! AJOUTER nb_esp_tot LORSQUE LA COMMANDE SQL FONCTIONNERA!!!!
+table_gradient<-cbind(donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
+colnames(table_gradient)<-c("coordonne_x","coordonnne_y","temp_moy","sal_moy")
+head(table_gradient)
+
+#------------------------------------
+#4-mettre en relation ces variables
+#DEVRAIT FONCTIONNER LORSQUE LE PREBLEME DE LA REQUETE SQL SERA REGLER
+#est-ce que jai le droit de faire une lm ? ou une glm? ou je devrais seulement faire une ANOVA ? quest-ce que ca donne une ANOVA ?
+mod_gardient<- lm(table_gradient$nb_esp~table_gradient$ID +table_gradient$temp_moy +table_gradient$sal_moy)
+summary(mod_gardient)
+anova(mod_gardient)
+
+
 #===========================================
 #note de cours biometrie assite
 #===========================================
@@ -285,9 +368,13 @@ dbWriteTable(connexion, append = TRUE, name = "donnees_complet", value = donnees
 #test de correlation
 #====================
 #on veut savoir sil y a une correlation entre le nb_esp et les types dhabitats
-cor.test()
+#cor.test()
 #paarson, kendall, sperman
 
+
+#====================================
+#test danalyse possible
+#================================
 #####Régression lineraire ???
 #critere de base --------------
 #prealable-existance ---
