@@ -14,9 +14,9 @@ colnames(donnees_base)[5]<-"coordonnee_y"
 
 #physico
 #instalation package
-install.packages("sdmpredictors")
-install.packages("leaflet")
-install.packages("raster")
+#install.packages("sdmpredictors")
+#install.packages("leaflet")
+#install.packages("raster")
 
 #lecture library
 library(sdmpredictors)
@@ -117,7 +117,7 @@ for ( i in 1:nrow(recouvrement)){
 }
 
 ####Table SQL
-install.packages('RSQLite')
+#install.packages('RSQLite')
 library(RSQLite)
 
 connexion <- dbConnect(SQLite(), dbname="E:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche/lien.db")
@@ -271,6 +271,7 @@ dbWriteTable(connexion, append = TRUE, name = "donnees_complet", value = donnees
 #---------------------------
 #1-garder la valeur la plus elever pour le recouvrement du nb espece nonmobile
 #extraction de la donnee avec SQL
+#les donnes sont alors dans des tables reelles
 max_valeur_rec_sql<-"
 SELECT ID, max(nb_espece) AS nb_espece
 FROM recouvrement 
@@ -285,49 +286,17 @@ SELECT ID, max(nb_espece) AS nb_espece
 FROM peumobile
 GROUP BY ID
 ;"
-nb_esp_rec<-dbGetQuery(connexion, max_valeur_pm_sql)
-head(nb_esp_rec)
-
-#creation de la table en SQL pour etre en mesure de faire la sum a la prochaine etape
-esp_rec_sql<-'
-CREATE TABLE nb_esp_rec (
- ID INTERGER (4),
- nb_espece INTEGER (4),
- PRIMARY KEY (ID)
-);'
-
-dbSendQuery(connexion, esp_rec_sql)
-dbListTables(connexion)
-
-esp_pm_sql<-'
-CREATE TABLE nb_esp_pm(
- ID INTERGER (4),
- nb_espece INTEGER (4),
- PRIMARY KEY (ID)
-);'
-
-dbSendQuery(connexion, esp_pm_sql)
-dbListTables(connexion)
-#------------------------------------
-#2-determiner le nb despeces total par point
-tot_espece_sql<- "
-SELECT mobile.ID, (mobile.nb_espece + nb_esp_rec.nb_espece + nb_esp_pm.nb_espece) AS total 
-FROM mobile
-JOIN nb_esp_rec on mobile.ID = nb_esp_rec.ID
-JOIN nb_esp_pm on mobile.ID = nb_esp_pm.ID
-;"
-
-nb_esp_tot<-dbGetQuery(connexion,tot_espece_sql)
-head(nb_esp_tot)
-# fonctionne supposement mais forme une table vide !!!!!!!!!!!!!!!!!!
+nb_esp_pm<-dbGetQuery(connexion, max_valeur_pm_sql)
+head(nb_esp_pm)
 
 #------------------------------------
-#3-rassembler les donnees pour voir le facteur du gradient
-##!!! AJOUTER nb_esp_tot LORSQUE LA COMMANDE SQL FONCTIONNERA!!!!
-table_gradient<-cbind(donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
-colnames(table_gradient)<-c("coordonne_x","coordonnne_y","temp_moy","sal_moy")
+#2-rassembler les donnees pour voir le facteur du gradient
+#faire la somme des valeurs pour avoir un nb despece total par points
+table_gradient<-cbind(mobile$ID,mobile$nb_esp,nb_esp_rec$nb_esp,nb_esp_pm$nb_esp,donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
+colnames(table_gradient)<-c("ID","esp_mobile","esp_rec","esp_peumobile","coordonne_x","coordonnne_y","temp_moy","sal_moy")
 head(table_gradient)
 
+table_gradient$div_tot<-rowSums(table_gradient[,2:4])
 #------------------------------------
 #4-mettre en relation ces variables
 #DEVRAIT FONCTIONNER LORSQUE LE PREBLEME DE LA REQUETE SQL SERA REGLER
@@ -335,6 +304,11 @@ head(table_gradient)
 mod_gardient<- lm(table_gradient$nb_esp~table_gradient$ID +table_gradient$temp_moy +table_gradient$sal_moy)
 summary(mod_gardient)
 anova(mod_gardient)
+
+#-----------------------------------
+#5-imager les especes le long du gradient
+#construire un histogramme a bande qui image les difference espece presente et leur nb pour chacun des points
+#associe ce diagramme a une map ?
 
 
 #===========================================
