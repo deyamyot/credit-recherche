@@ -298,12 +298,20 @@ esp_tot<-rowSums(gradient[,c(2:4)]) # matrice impliquon ne peut pas utiliser le 
 gradient<-cbind(gradient,esp_tot)
 
 #------------------------------------
-#3-mettre en relation ces variables
-#DEVRAIT FONCTIONNER LORSQUE LE PREBLEME DE LA REQUETE SQL SERA REGLER
-#est-ce que jai le droit de faire une lm ? ou une glm? ou je devrais seulement faire une ANOVA ? quest-ce que ca donne une ANOVA ?
-mod_gardient<- lm(gradient[,"esp_tot"]~gradient[,"ID"] +gradient[,"temps_moy"] +gradient[,"sal_moy"])#
-summary(mod_gardient)
-anova(mod_gardient)
+#3-analyse multivariees
+d_gradient<-as.data.frame(gradient)
+mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
+summary.aov(mod1)
+
+pca_mod1<-prcomp(t(d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
+summary(pca_mod1)
+#proportion variance = correspond *100 au pourcentage que PC1 explique de la variance totale
+str(pca_mod1)
+#The center point ($center), scaling ($scale), standard deviation(sdev) of each principal component
+#The relationship (correlation or anticorrelation, etc) between the initial variables and the principal components ($rotation)
+#The values of each sample in terms of the principal components ($x)
+install.packages('ggbiplot')
+library(ggbiplot)
 
 #-----------------------------------
 #5-imager les especes le long du gradient
