@@ -292,16 +292,16 @@ head(nb_esp_pm)
 #------------------------------------
 #2-rassembler les donnees pour voir le facteur du gradient
 #faire la somme des valeurs pour avoir un nb despece total par points
-table_gradient<-cbind(mobile$ID,mobile$nb_esp,nb_esp_rec$nb_esp,nb_esp_pm$nb_esp,donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
-colnames(table_gradient)<-c("ID","esp_mobile","esp_rec","esp_peumobile","coordonne_x","coordonnne_y","temp_moy","sal_moy")
-head(table_gradient)
+gradient<-cbind(mobile$ID,mobile$nb_esp,nb_esp_rec$nb_esp,nb_esp_pm$nb_esp,donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
+colnames(gradient)<-c("ID","esp_mobile","esp_rec","esp_peumobile","coordonne_x","coordonnne_y","temp_moy","sal_moy")
+esp_tot<-rowSums(gradient[,c(2:4)]) # matrice impliquon ne peut pas utiliser le $ pour referer a une colone et quon doit dabord creer un vecteur pour ensuite lajouter a la matrice
+gradient<-cbind(gradient,esp_tot)
 
-table_gradient$div_tot<-rowSums(table_gradient[,2:4])
 #------------------------------------
-#4-mettre en relation ces variables
+#3-mettre en relation ces variables
 #DEVRAIT FONCTIONNER LORSQUE LE PREBLEME DE LA REQUETE SQL SERA REGLER
 #est-ce que jai le droit de faire une lm ? ou une glm? ou je devrais seulement faire une ANOVA ? quest-ce que ca donne une ANOVA ?
-mod_gardient<- lm(table_gradient$nb_esp~table_gradient$ID +table_gradient$temp_moy +table_gradient$sal_moy)
+mod_gardient<- lm(gradient[,"esp_tot"]~gradient[,"ID"] +gradient[,"temps_moy"] +gradient[,"sal_moy"])#
 summary(mod_gardient)
 anova(mod_gardient)
 
