@@ -299,20 +299,30 @@ gradient<-cbind(gradient,esp_tot)
 
 #------------------------------------
 #3-analyse multivariees
+#ANOVA multivarie-------------
 d_gradient<-as.data.frame(gradient)
 mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
 summary.aov(mod1)
 
+#PCA-------------------
 pca_mod1<-prcomp(t(d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
 summary(pca_mod1)
 #proportion variance = correspond *100 au pourcentage que PC1 explique de la variance totale
-str(pca_mod1)
+
+str(pca_mod1)#permet de voir les objets de la PCA
 #The center point ($center), scaling ($scale), standard deviation(sdev) of each principal component
 #The relationship (correlation or anticorrelation, etc) between the initial variables and the principal components ($rotation)
 #The values of each sample in terms of the principal components ($x)
-install.packages('ggbiplot')
-library(ggbiplot)
 
+#imager PCA-------------
+#install.packages('ggplot2')
+library(ggplot2)
+
+install.packages("devtools", repo="http://cran.us.r-project.org")
+library(devtools)
+#remove.packages("cli")
+#install.packages("cli")
+install_github("vqv/ggbiplot")
 #-----------------------------------
 #5-imager les especes le long du gradient
 #construire un histogramme a bande qui image les difference espece presente et leur nb pour chacun des points
