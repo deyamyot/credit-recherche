@@ -315,14 +315,27 @@ str(pca_mod1)#permet de voir les objets de la PCA
 #The values of each sample in terms of the principal components ($x)
 
 #imager PCA-------------
+##installation packages necessaire------
 #install.packages('ggplot2')
 library(ggplot2)
 
-install.packages("devtools", repo="http://cran.us.r-project.org")
+#install.packages("devtools", repo="http://cran.us.r-project.org")
 library(devtools)
+#code pour tenter une erreur de lecture de la library
 #remove.packages("cli")
 #install.packages("cli")
-install_github("vqv/ggbiplot")
+#mise a jour des packages (tools)
+#ouverture du Rstudio en tant qu'administrateur (clic droit sur l'icone)
+#remove.packages("rlang")
+#install.packages("rlang")
+#remove.packages("devtools")
+#install.packages("devtools", dependencies = TRUE)
+library(devtools)
+
+#install_github("vqv/ggbiplot", force=TRUE)
+library(ggbiplot)
+##plot PCA-------------
+ggbiplot(pca_mod1)
 #-----------------------------------
 #5-imager les especes le long du gradient
 #construire un histogramme a bande qui image les difference espece presente et leur nb pour chacun des points
