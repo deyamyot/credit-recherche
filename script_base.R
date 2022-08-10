@@ -391,12 +391,8 @@ summary.aov(mod3)
 #devrait potentiellement faire une lm pour interpreter la relation qui est positive
 
 ###############################################
-#### Manipulation donnees et analyse type sol
-###############################################
-
-#on veut mettre en relation la diversite des especes et mm labondance avec le type de sol
-#potentiellement faire un graphique de reseau entre les types de sol et les differentes especes 
-#pour etre en mesure de mettre en relation tous ca => utiliser les pourcentages 
+#### Imager abondance espece par station
+##############################################
 #est-ce que je devrais faire une carte qui represente pour chacune des especes elles sont presente a quel point dechantillonnage genre un enorme graphique de barplot
 #ou des graohique individuel de presence/absence et abondance en fonction des different point ce qui me donnerais une idee de la distribution => scatterplot
 
@@ -419,14 +415,24 @@ colnames(ab_esp)[28]<-"zone"
 #3-boucle pour faire tous les scatterplot en mm temps
 #marge entre les graphique sur la figure
 dev.off()#pour effecer la figure preceddament ouverte
-par(mar=c(4,4,5,2))
-par(mfrow=c(5,6))#dimension de la figure en fonction du nb de graphique (6X6)
+par(mar=c(4,4,5,2))#x,y,haut,bas
+par(mfrow=c(5,6))#combien de graphique par combien
 
 #VERIFIER SI IL UTILISE LES BONNES COLONNES ET COMMENT DONNER LE TITRE DES COLONNES SANS TOUTES LES ECRIRES A LA MAIN
 for (i in 1:ncol(ab_esp[,c(2:27)])){
   plot(x=ab_esp$ID,y=ab_esp[,i], 
        xlab="ID", ylab="MaxN",main=i)
 }
+
+###############################################
+#### Manipulation donnees et analyse type sol
+###############################################
+
+#on veut mettre en relation la diversite des especes et mm labondance avec le type de sol
+#potentiellement faire un graphique de reseau entre les types de sol et les differentes especes 
+#pour etre en mesure de mettre en relation tous ca => utiliser les pourcentages 
+
+
 #Analyse multivaree--------------------
 #1-moyenne valeur de pourcentage de recouvrement---------------
 ##VERIFIER POURCENTAGE SABLE !!!!!!!!!!!!!!
@@ -440,8 +446,18 @@ head(pmoy_rec)
 
 #2-table sol---------------------
 #fonctionnera une fois que la requete SQL fonctionnera
-sol<-cbind(donnees_complet$ID,donnees_complet$zone,pmoy_rec,esp_tot)
+sol<-cbind(donnees_complet$zone,pmoy_rec,esp_tot)
+colnames(sol[,1])<-"zone"
 
+#3-ANOVA?------------------------
+d_sol<-as.data.frame(sol)
+mod4<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
+summary.aov(mod4)
+
+pca_mod4<-prcomp((d_sol[,c(1,7:9)]), center=TRUE,scale=TRUE)
+summary(pca_mod2)
+
+str(pca_mod2)
 #===========================================
 #note de cours biometrie assite
 #===========================================
