@@ -286,9 +286,9 @@ dbWriteTable(connexion, append = TRUE, name = "recouvrement", value = recouvreme
 dbWriteTable(connexion, append = TRUE, name = "donnees_complet", value = donnees_complet, row.names = FALSE)
 
 
-#################################
-##### Analyse
-################################
+##############################################
+##### Manipulation donnees et analyse gradient
+#############################################
 
 #on souhaite mettre la variable reponse = nb_esp en fonction des variables explicatives
 #(coordonnees,temp,sal,%recouvrment type de susbtrat)
@@ -324,7 +324,7 @@ esp_tot<-rowSums(gradient[,c(2:4)]) # matrice impliquon ne peut pas utiliser le 
 gradient<-cbind(gradient,esp_tot)
 
 #------------------------------------
-#3-analyse multivariees
+#3-analyse multivariees impact du gradient
 #ANOVA multivarie-------------
 d_gradient<-as.data.frame(gradient)
 mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
@@ -365,18 +365,82 @@ library(ggbiplot)
 #install.packages("yarrr")
 library("yarrr")#pour avoir acces a plus de couleurs entre autre
 
+dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-#le label nous permet de situe chacune des stations
-#il pourrait etre interessant davoir une carte/raster de la zone dechantillonnage
-#et potentiellement une pour les deux variables environnementales aussi
+#le label nous permet de situer chacune des stations
 
 
 #-----------------------------------
-#5-imager les especes le long du gradient
-#construire un histogramme a bande qui image les difference espece presente et leur nb pour chacun des points
-#associe ce diagramme a une map ?
+#4-Ajouter la diversite comme variable Y supplementaire
+mod2<-manova(cbind(temp_moy, sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
+summary.aov(mod2)
 
+pca_mod2<-prcomp((d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
+summary(pca_mod2)
+
+str(pca_mod2)
+
+dev.off()#effacer figure deja ouverte
+ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(1,7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#-----------------------------------
+#5-Possibilite quil y est une interaction entre la temperature et la salinite
+mod3<-manova(cbind(temp_moy, sal_moy,temp_moy*sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
+summary.aov(mod3)
+#devrait potentiellement faire une lm pour interpreter la relation qui est positive
+
+###############################################
+#### Manipulation donnees et analyse type sol
+###############################################
+
+#on veut mettre en relation la diversite des especes et mm labondance avec le type de sol
+#potentiellement faire un graphique de reseau entre les types de sol et les differentes especes 
+#pour etre en mesure de mettre en relation tous ca => utiliser les pourcentages 
+#est-ce que je devrais faire une carte qui represente pour chacune des especes elles sont presente a quel point dechantillonnage genre un enorme graphique de barplot
+#ou des graohique individuel de presence/absence et abondance en fonction des different point ce qui me donnerais une idee de la distribution => scatterplot
+
+#scatterplot pour chacune des especes----------------------------
+#certaine especes ont ete prise en compte en terme de recouvrement donc comment faire la mm chose ?
+
+#1-extraire les bonne donnes de la table peumobile=> valeurs max
+max_pm_sql<-"
+SELECT ID, max(oursin) AS oursin, max(dollars_sable) AS dollars_sable, max(anemone_p) AS anemone_p, max(anemone_r) AS anemone_r, max(anemone_pb) AS anemone_pb, max(concombre_v) AS concombre_v, max(concombre_r) AS concombre_r, max(ver_noire) AS ver_noire,max(coraux_mou) AS coraux_mou
+FROM peumobile
+GROUP BY ID
+;"
+max_pm<-dbGetQuery(connexion, max_pm_sql)
+head(max_pm)
+
+#2-faire une table qui rassemble toutes les donnnes
+ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
+colnames(ab_esp)[28]<-"zone"
+
+#3-boucle pour faire tous les scatterplot en mm temps
+#marge entre les graphique sur la figure
+dev.off()#pour effecer la figure preceddament ouverte
+par(mar=c(4,4,5,2))
+par(mfrow=c(5,6))#dimension de la figure en fonction du nb de graphique (6X6)
+
+#VERIFIER SI IL UTILISE LES BONNES COLONNES ET COMMENT DONNER LE TITRE DES COLONNES SANS TOUTES LES ECRIRES A LA MAIN
+for (i in 1:ncol(ab_esp[,c(2:27)])){
+  plot(x=ab_esp$ID,y=ab_esp[,i], 
+       xlab="ID", ylab="MaxN",main=i)
+}
+#Analyse multivaree--------------------
+#1-moyenne valeur de pourcentage de recouvrement---------------
+##VERIFIER POURCENTAGE SABLE !!!!!!!!!!!!!!
+moy_p_rec_sql<-"
+SELECT ID, avg(p_sable) AS pmoy_sable, avg(p_gravier) AS pmoy_gravier, avg(p_caillou) AS pmoy_caillou, avg(p_bloc) AS pmoy_bloc, avg(p_rochemere) AS pmoy_rochemere
+FROM recouvrement 
+GROUP BY ID
+;"
+pmoy_rec<-dbGetQuery(connexion, moy_p_rec_sql)
+head(pmoy_rec)
+
+#2-table sol---------------------
+#fonctionnera une fois que la requete SQL fonctionnera
+sol<-cbind(donnees_complet$ID,donnees_complet$zone,pmoy_rec,esp_tot)
 
 #===========================================
 #note de cours biometrie assite
