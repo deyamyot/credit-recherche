@@ -65,6 +65,32 @@ donnees_complet<-cbind(donnees_base, my.sites.physico)
 colnames(donnees_complet)[14] <- "temp_moy" 
 colnames(donnees_complet)[15] <- "sal_moy" 
 
+#division en trois grande zone dechantillonnage selon leur coordonnees qui correspondent aussi au date 
+for (i in 1:nrow(donnees_complet)){
+  if (donnees_complet$date[i]=="27/07/2021"){
+    donnees_complet$zone[i]<-"1"
+   }
+ else if (donnees_complet$date[i]=="28/07/2021"){
+  donnees_complet$zone[i]<-"2"
+ }
+  else if (donnees_complet$date[i]=="29/07/2021"){
+    donnees_complet$zone[i]<-"3"
+  }
+  else {
+    donnees_complet$zone[i]<-"4"
+  }
+}
+
+#mapping physico----------
+# Crop raster vis-a-vis le st-laurent
+#st_laurent_ex <- extent(-100, 45, 30.75, 72.5)
+#temp_moy_min_crop <- crop(temp, st_laurent_ext)
+
+# Generate a nice color ramp and plot the map
+#my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127"))
+#plot(temp_moy_min_crop,col=my.colors(1000),axes=FALSE, box=FALSE)
+#title(cex.sub = 1.25, sub = "Température moyenne en milieux côtier (ºC)")
+
 #####################################
 ####Manipulation des donnees 
 ####################################
@@ -305,7 +331,7 @@ mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
 summary.aov(mod1)
 
 #PCA-------------------
-pca_mod1<-prcomp(t(d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
+pca_mod1<-prcomp((d_gradient[,c(1,7,8)]), center=TRUE,scale=TRUE)
 summary(pca_mod1)
 #proportion variance = correspond *100 au pourcentage que PC1 explique de la variance totale
 
@@ -335,7 +361,17 @@ library(devtools)
 #install_github("vqv/ggbiplot", force=TRUE)
 library(ggbiplot)
 ##plot PCA-------------
-ggbiplot(pca_mod1)
+
+#install.packages("yarrr")
+library("yarrr")#pour avoir acces a plus de couleurs entre autre
+
+ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#le label nous permet de situe chacune des stations
+#il pourrait etre interessant davoir une carte/raster de la zone dechantillonnage
+#et potentiellement une pour les deux variables environnementales aussi
+
+
 #-----------------------------------
 #5-imager les especes le long du gradient
 #construire un histogramme a bande qui image les difference espece presente et leur nb pour chacun des points
