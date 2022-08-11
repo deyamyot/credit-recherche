@@ -412,6 +412,7 @@ head(max_pm)
 ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
 colnames(ab_esp)[28]<-"zone"
 
+#ajsfhkajhfjkahf
 #3-boucle pour faire tous les scatterplot en mm temps
 #marge entre les graphique sur la figure
 dev.off()#pour effecer la figure preceddament ouverte
