@@ -109,36 +109,39 @@ recouvrement$nb_espece<-rowSums(recouvrement[,8:12]>0)
 
 
 #pourcentage recouvrement-----------
-
-#nb de point evaluer en fonction des point non-visible
-recouvrement$nb_point_ev<-recouvrement$nb_points_tot - recouvrement$nb_points_nonvisible
-#nb de point pour lequel le recouvrement negale pas a une des categorie biotique
-recouvrement$non_biotique<-recouvrement$nb_point_ev - rowSums(recouvrement[,8:12])
-#correction nob croissement tot=54
+#correction nb croissement tot=54
 #cadre trop grand = enlever une ranger supplementaire pour avoir le mm nb de croissement que les autres
 recouvrement[90,11]<-52
 recouvrement[111,9]<-43
 recouvrement[111,11]<-11
 
+#nb de point evaluer en fonction des point non-visible
+recouvrement$nb_point_ev<-recouvrement$nb_points_tot - recouvrement$nb_points_nonvisible
+#nb de point pour lequel le recouvrement negale pas a une des categorie biotique
+recouvrement$non_biotique<-recouvrement$nb_point_ev - rowSums(recouvrement[,8:12])
 
+
+#le probleme est que pour certaine colone la valeur est plus elever que celle du nb de point ev 
+#il faudrait donc le prendre en consideration au prealable
+#aussi puisque l'on fait apelle a la colonne complet dans le calcul, on a pas besoin de la boucle
 #recouvrement biotique
 for( i in 1:nrow(recouvrement)){
-  recouvrement$p_algue_r<-(recouvrement[,8]/recouvrement[,18])*100
-  recouvrement$p_algue_b<-(recouvrement[,9]/recouvrement[,18])*100
-  recouvrement$p_algue_v<-(recouvrement[,10]/recouvrement[,18])*100
-  recouvrement$p_coralline<-(recouvrement[,11]/recouvrement[,18])*100
-  recouvrement$p_coquillage<-(recouvrement[,12]/recouvrement[,18])*100
-  recouvrement$p_non_biotique<-(recouvrement[,19]/recouvrement[,18])*100
+  recouvrement$p_algue_r<-(recouvrement[,8]/recouvrement[,19])*100
+  recouvrement$p_algue_b<-(recouvrement[,9]/recouvrement[,19])*100
+  recouvrement$p_algue_v<-(recouvrement[,10]/recouvrement[,19])*100
+  recouvrement$p_coralline<-(recouvrement[,11]/recouvrement[,19])*100
+  recouvrement$p_coquillage<-(recouvrement[,12]/recouvrement[,19])*100
+  recouvrement$p_non_biotique<-(recouvrement[,20]/recouvrement[,19])*100
   i=i+1
 }
 
 #recouvrement granulo
 for ( i in 1:nrow(recouvrement)){
-  recouvrement$p_sable<-(recouvrement[,13]/recouvrement[,18])*100
-  recouvrement$p_gravier<-(recouvrement[,14]/recouvrement[,18])*100
-  recouvrement$p_caillou<-(recouvrement[,15]/recouvrement[,18])*100
-  recouvrement$p_bloc<-(recouvrement[,16]/recouvrement[,18])*100
-  recouvrement$p_rochemere<-(recouvrement[,17]/recouvrement[,18])*100
+  recouvrement$p_sable<-((recouvrement[,13]/recouvrement[,19])*100)
+  recouvrement$p_gravier<-((recouvrement[,14]/recouvrement[,19])*100)
+  recouvrement$p_caillou<-((recouvrement[,15]/recouvrement[,19])*100)
+  recouvrement$p_bloc<-((recouvrement[,16]/recouvrement[,19])*100)
+  recouvrement$p_rochemere<-((recouvrement[,17]/recouvrement[,19])*100)
   i=i+1
 }
 
@@ -412,7 +415,7 @@ head(max_pm)
 ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
 colnames(ab_esp)[28]<-"zone"
 
-#ajsfhkajhfjkahf
+
 #3-boucle pour faire tous les scatterplot en mm temps
 #marge entre les graphique sur la figure
 dev.off()#pour effecer la figure preceddament ouverte
