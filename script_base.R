@@ -149,7 +149,7 @@ for ( i in 1:nrow(recouvrement)){
 #install.packages('RSQLite')
 library(RSQLite)
 
-connexion <- dbConnect(SQLite(), dbname="E:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche/lien.db")
+connexion <- dbConnect(SQLite(), dbname="D:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche/lien.db")
 
 #utiliser pour vider la table si problematique
 dbSendQuery(connexion,"DROP TABLE mobile;") 
@@ -276,6 +276,7 @@ CREATE TABLE donnees_complet (
   profondeur_m REAL(8),
   temp_moy REAL(8),
   sal_moy REAL(8),
+  zone INTEGER (4)
     PRIMARY KEY (ID)
 );'
 
@@ -323,11 +324,40 @@ head(nb_esp_pm)
 #faire la somme des valeurs pour avoir un nb despece total par points
 gradient<-cbind(mobile$ID,mobile$nb_esp,nb_esp_rec$nb_esp,nb_esp_pm$nb_esp,donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
 colnames(gradient)<-c("ID","esp_mobile","esp_rec","esp_peumobile","coordonne_x","coordonnne_y","temp_moy","sal_moy")
-esp_tot<-rowSums(gradient[,c(2:4)]) # matrice impliquon ne peut pas utiliser le $ pour referer a une colone et quon doit dabord creer un vecteur pour ensuite lajouter a la matrice
+esp_tot<-rowSums(gradient[,c(2:4)]) # matrice implique quon ne peut pas utiliser le $ pour referer a une colone et quon doit dabord creer un vecteur pour ensuite lajouter a la matrice
 gradient<-cbind(gradient,esp_tot)
 
+
 #------------------------------------
-#3-analyse multivariees impact du gradient
+#3-assomption manova
+#install.packages("micompr")
+#install.packages("MVN")
+#install.packages("biotools")
+install.packages("rstatix")
+
+
+library(micompr)
+library(MVN)
+library(biotools)
+library(rstatix)
+
+
+#taille adequate de lechantillon = oui jai plus e lignes que de colonnes (9 X32)
+#independance des info = oui
+#absences de donnes aberrantes univarie et multivarie
+identify_outliers(temp_moy) # univarie
+identify_outliers(sal_moy)
+mahalanobis_distance()# multivarie
+#normalite a plusieurs variable 
+mshapiro.test()
+#absence de multicolinairite
+#linearite
+#homogeneite des variances = test de Levenne
+#homogeneite des matrice de variance-covariance= test boxM
+am<-assumptions_manova(gradient[,7:8],gradient[,1])
+
+#------------------------------------
+#4-analyse multivariees impact du gradient
 #ANOVA multivarie-------------
 d_gradient<-as.data.frame(gradient)
 mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
@@ -363,8 +393,8 @@ library(devtools)
 
 #install_github("vqv/ggbiplot", force=TRUE)
 library(ggbiplot)
-##plot PCA-------------
 
+##plot PCA-------------
 #install.packages("yarrr")
 library("yarrr")#pour avoir acces a plus de couleurs entre autre
 
@@ -376,16 +406,16 @@ ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale
 
 #-----------------------------------
 #4-Ajouter la diversite comme variable Y supplementaire
-mod2<-manova(cbind(temp_moy, sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
+mod2<-manova(cbind(temp_moy, sal_moy) ~ esp_tot, data = d_gradient)
 summary.aov(mod2)
 
-pca_mod2<-prcomp((d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
+pca_mod2<-prcomp((d_gradient[,c(7:9)]), center=TRUE,scale=TRUE)
 summary(pca_mod2)
 
 str(pca_mod2)
 
 dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(1,7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #-----------------------------------
 #5-Possibilite quil y est une interaction entre la temperature et la salinite
