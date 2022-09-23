@@ -1,5 +1,5 @@
 #set working directory
-setwd("E:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche")
+setwd("D:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche")
 
 #######################################
 #importation data
@@ -326,14 +326,14 @@ gradient<-cbind(mobile$ID,mobile$nb_esp,nb_esp_rec$nb_esp,nb_esp_pm$nb_esp,donne
 colnames(gradient)<-c("ID","esp_mobile","esp_rec","esp_peumobile","coordonne_x","coordonnne_y","temp_moy","sal_moy")
 esp_tot<-rowSums(gradient[,c(2:4)]) # matrice implique quon ne peut pas utiliser le $ pour referer a une colone et quon doit dabord creer un vecteur pour ensuite lajouter a la matrice
 gradient<-cbind(gradient,esp_tot)
-
+summary(gradient)
 
 #------------------------------------
 #3-assomption manova
 #install.packages("micompr")
 #install.packages("MVN")
 #install.packages("biotools")
-install.packages("rstatix")
+#install.packages("rstatix")
 
 
 library(micompr)
@@ -345,8 +345,10 @@ library(rstatix)
 #taille adequate de lechantillon = oui jai plus e lignes que de colonnes (9 X32)
 #independance des info = oui
 #absences de donnes aberrantes univarie et multivarie
-identify_outliers(temp_moy) # univarie
-identify_outliers(sal_moy)
+d_gradient<-as.data.frame(gradient)
+#PK NE RECONNAIT PAS COMME UN DATA FRAME POUR LOPPERATION ALORS QUE IS.DATA.FRAME IS TRUE !!!!!!!!!!!!!!!!!!!!!
+identify_outliers(d_gradient[,7]) # univarie
+identify_outliers(gradient[,8])
 mahalanobis_distance()# multivarie
 #normalite a plusieurs variable 
 mshapiro.test()
@@ -359,7 +361,7 @@ am<-assumptions_manova(gradient[,7:8],gradient[,1])
 #------------------------------------
 #4-analyse multivariees impact du gradient
 #ANOVA multivarie-------------
-d_gradient<-as.data.frame(gradient)
+
 mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
 summary.aov(mod1)
 
@@ -406,23 +408,37 @@ ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale
 
 #-----------------------------------
 #4-Ajouter la diversite comme variable Y supplementaire
-mod2<-manova(cbind(temp_moy, sal_moy) ~ esp_tot, data = d_gradient)
+mod2<-manova(cbind(temp_moy, sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
 summary.aov(mod2)
 
-pca_mod2<-prcomp((d_gradient[,c(7:9)]), center=TRUE,scale=TRUE)
+pca_mod2<-prcomp((d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
 summary(pca_mod2)
 
 str(pca_mod2)
 
 dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(1,7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #-----------------------------------
 #5-Possibilite quil y est une interaction entre la temperature et la salinite
 mod3<-manova(cbind(temp_moy, sal_moy,temp_moy*sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
 summary.aov(mod3)
 #devrait potentiellement faire une lm pour interpreter la relation qui est positive
+#COMMENT FAIRE UNE PCA POUR AVEC UNE RELATION INTERVARIABLE X ??????????
 
+#----------------------------------------
+#6-test avec seulement l autre variable Y
+mod4<-manova(cbind(temp_moy, sal_moy) ~ esp_tot, data = d_gradient)
+summary.aov(mod2)
+
+pca_mod4<-prcomp((d_gradient[,c(7:9)]), center=TRUE,scale=TRUE)
+summary(pca_mod2)
+
+str(pca_mod2)
+
+dev.off()#effacer figure deja ouverte
+ggbiplot(pca_mod4,labels=rownames(d_gradient[,c(7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 ###############################################
 #### Imager abondance espece par station
 ##############################################
@@ -453,9 +469,9 @@ par(mar=c(4,4,5,2))#x,y,haut,bas
 par(mfrow=c(5,6))#combien de graphique par combien
 
 #VERIFIER SI IL UTILISE LES BONNES COLONNES ET COMMENT DONNER LE TITRE DES COLONNES SANS TOUTES LES ECRIRES A LA MAIN
-for (i in 1:ncol(ab_esp[,c(2:27)])){
+for (i in 2:ncol(ab_esp)){
   plot(x=ab_esp$ID,y=ab_esp[,i], 
-       xlab="ID", ylab="MaxN",main=i)
+       xlab="ID", ylab="MaxN",main=(colnames(donnees_complet)[,i]))
 }
 
 ###############################################
@@ -479,19 +495,83 @@ pmoy_rec<-dbGetQuery(connexion, moy_p_rec_sql)
 head(pmoy_rec)
 
 #2-table sol---------------------
-#fonctionnera une fois que la requete SQL fonctionnera
 sol<-cbind(donnees_complet$zone,pmoy_rec,esp_tot)
-colnames(sol[,1])<-"zone"
+colnames(sol)[1]<-"zone"
+summary(sol)
+#3- faire un classement selon le pourcentage de substrat le plus eleve ---------------------
+#je veux que pour chacune des rangees il compare les 4 colones et identifie
+#celle avec le plus au pourcentage
+for (i in 1:nrow(sol)){
+ if (sol$pmoy_sable[i]> (sol$pmoy_gravier & sol$pmoy_gravier & sol$pmoy_caillou & sol$pmoy_bloc & sol$pmoy_rochemere)){
+    sol$g_sub[i] <- "s"
+    }
+  else{
+    if (sol$pmoy_gravier[i]> (sol$pmoy_sable & sol$pmoy_caillou & sol$pmoy_bloc & sol$pmoy_rochemere)){
+      sol$g_sub[i] <- "g"
+    }
+    else{
+      if (sol$pmoy_caillou[i]> (sol$pmoy_sable & sol$pmoy_gravier & sol$pmoy_bloc & sol$pmoy_rochemere)){
+        sol$g_sub[i] <- "c"
+      }
+      else{
+        if (sol$pmoy_bloc[i]> (sol$pmoy_sable & sol$pmoy_gravier & sol$pmoy_caillou & sol$pmoy_rochemere)){
+          sol$g_sub[i] <- "b"
+        }
+        else{
+          if (sol$pmoy_rochemere[i]> (sol$pmoy_sable & sol$pmoy_gravier & sol$pmoy_caillou & sol$pmoy_bloc)){
+            sol$g_sub[i] <- "r"
+          }
+        }
+      }
+    }
+  }
+}
 
-#3-ANOVA?------------------------
+
+#4-ANOVA et pca------------------------
 d_sol<-as.data.frame(sol)
-mod4<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
-summary.aov(mod4)
+mod5<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ ID, data = d_sol)
+summary.aov(mod5)
 
-pca_mod4<-prcomp((d_sol[,c(1,7:9)]), center=TRUE,scale=TRUE)
-summary(pca_mod2)
+pca_mod5<-prcomp((d_sol[,c(2:7)]), center=TRUE,scale=TRUE)
+summary(pca_mod5)
 
-str(pca_mod2)
+str(pca_mod5)
+
+#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
+dev.off()#effacer figure deja ouverte
+ggbiplot(pca_mod5,labels=rownames(d_sol[,c(2:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+
+#5- en fonction de l autre variable y--------------------------------
+d_sol<-as.data.frame(sol)
+mod6<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ esp_tot, data = d_sol)
+summary.aov(mod6)
+
+pca_mod6<-prcomp((d_sol[,c(3:8)]), center=TRUE,scale=TRUE)
+summary(pca_mod6)
+
+str(pca_mod5)
+
+#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
+dev.off()#effacer figure deja ouverte
+ggbiplot(pca_mod6,labels=rownames(d_sol[,c(3:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+
+#6- avec les deux varaibles y ---------------------------------
+d_sol<-as.data.frame(sol)
+mod7<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
+summary.aov(mod7)
+
+pca_mod7<-prcomp((d_sol[,c(2:8)]), center=TRUE,scale=TRUE)
+summary(pca_mod7)
+
+str(pca_mod7)
+
+#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
+dev.off()#effacer figure deja ouverte
+ggbiplot(pca_mod7,labels=rownames(d_sol[,c(2:8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$sub_zone)+
+  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #===========================================
 #note de cours biometrie assite
 #===========================================
