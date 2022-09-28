@@ -81,15 +81,7 @@ for (i in 1:nrow(donnees_complet)){
   }
 }
 
-#mapping physico----------
-# Crop raster vis-a-vis le st-laurent
-#st_laurent_ex <- extent(-100, 45, 30.75, 72.5)
-#temp_moy_min_crop <- crop(temp, st_laurent_ext)
 
-# Generate a nice color ramp and plot the map
-#my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127"))
-#plot(temp_moy_min_crop,col=my.colors(1000),axes=FALSE, box=FALSE)
-#title(cex.sub = 1.25, sub = "Température moyenne en milieux côtier (ºC)")
 
 #####################################
 ####Manipulation des donnees 
@@ -114,6 +106,10 @@ recouvrement$nb_espece<-rowSums(recouvrement[,8:12]>0)
 recouvrement[90,11]<-52
 recouvrement[111,9]<-43
 recouvrement[111,11]<-11
+recouvrement[32,13]<-32
+recouvrement31[31,13]<-38
+recouvrement[26,13]<-42
+recouvrement[25,13]<-33
 
 #nb de point evaluer en fonction des point non-visible
 recouvrement$nb_point_ev<-recouvrement$nb_points_tot - recouvrement$nb_points_nonvisible
@@ -121,9 +117,7 @@ recouvrement$nb_point_ev<-recouvrement$nb_points_tot - recouvrement$nb_points_no
 recouvrement$non_biotique<-recouvrement$nb_point_ev - rowSums(recouvrement[,8:12])
 
 
-#le probleme est que pour certaine colone la valeur est plus elever que celle du nb de point ev 
-#il faudrait donc le prendre en consideration au prealable
-#aussi puisque l'on fait apelle a la colonne complet dans le calcul, on a pas besoin de la boucle
+
 #recouvrement biotique
 for( i in 1:nrow(recouvrement)){
   recouvrement$p_algue_r<-(recouvrement[,8]/recouvrement[,19])*100
@@ -145,7 +139,10 @@ for ( i in 1:nrow(recouvrement)){
   i=i+1
 }
 
+#######################################
 ####Table SQL
+#######################################
+
 #install.packages('RSQLite')
 library(RSQLite)
 
@@ -290,9 +287,9 @@ dbWriteTable(connexion, append = TRUE, name = "recouvrement", value = recouvreme
 dbWriteTable(connexion, append = TRUE, name = "donnees_complet", value = donnees_complet, row.names = FALSE)
 
 
-##############################################
-##### Manipulation donnees et analyse gradient
-#############################################
+#################################################################
+##### Manipulation donnees pour analyse + analyse + graphiquqe
+################################################################
 
 #on souhaite mettre la variable reponse = nb_esp en fonction des variables explicatives
 #(coordonnees,temp,sal,%recouvrment type de susbtrat)
@@ -341,21 +338,23 @@ library(MVN)
 library(biotools)
 library(rstatix)
 
-
-#taille adequate de lechantillon = oui jai plus e lignes que de colonnes (9 X32)
-#independance des info = oui
-#absences de donnes aberrantes univarie et multivarie
+#EST CE QUE CEST CE QUE JE DOIS FAIRE ? HElP!
+#a)taille adequate de lechantillon = oui jai plus e lignes que de colonnes (9 X32)
+#b)independance des info = oui
+#c)absences de donnes aberrantes univarie et multivarie
 d_gradient<-as.data.frame(gradient)
 #PK NE RECONNAIT PAS COMME UN DATA FRAME POUR LOPPERATION ALORS QUE IS.DATA.FRAME IS TRUE !!!!!!!!!!!!!!!!!!!!!
 identify_outliers(d_gradient[,7]) # univarie
 identify_outliers(gradient[,8])
 mahalanobis_distance()# multivarie
-#normalite a plusieurs variable 
+#d)normalite a plusieurs variable 
 mshapiro.test()
-#absence de multicolinairite
-#linearite
-#homogeneite des variances = test de Levenne
-#homogeneite des matrice de variance-covariance= test boxM
+#d)absence de multicolinairite
+#e)linearite
+#f)homogeneite des variances = test de Levenne
+#g)homogeneite des matrice de variance-covariance= test boxM
+
+#supposer gerer toutes les assomptions en une seule fonction
 am<-assumptions_manova(gradient[,7:8],gradient[,1])
 
 #------------------------------------
@@ -369,7 +368,6 @@ summary.aov(mod1)
 pca_mod1<-prcomp((d_gradient[,c(1,7,8)]), center=TRUE,scale=TRUE)
 summary(pca_mod1)
 #proportion variance = correspond *100 au pourcentage que PC1 explique de la variance totale
-
 str(pca_mod1)#permet de voir les objets de la PCA
 #The center point ($center), scaling ($scale), standard deviation(sdev) of each principal component
 #The relationship (correlation or anticorrelation, etc) between the initial variables and the principal components ($rotation)
@@ -382,73 +380,77 @@ library(ggplot2)
 
 #install.packages("devtools", repo="http://cran.us.r-project.org")
 library(devtools)
-#code pour tenter une erreur de lecture de la library
-#remove.packages("cli")
-#install.packages("cli")
-#mise a jour des packages (tools)
-#ouverture du Rstudio en tant qu'administrateur (clic droit sur l'icone)
-#remove.packages("rlang")
-#install.packages("rlang")
-#remove.packages("devtools")
-#install.packages("devtools", dependencies = TRUE)
-library(devtools)
 
 #install_github("vqv/ggbiplot", force=TRUE)
 library(ggbiplot)
 
 ##plot PCA-------------
 #install.packages("yarrr")
-library("yarrr")#pour avoir acces a plus de couleurs entre autre
+library("yarrr")#pour avoir acces a plus de couleurs entre autre :)
 
 dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #le label nous permet de situer chacune des stations
-
+#CHANGER LA LEGENDE !!!!!!!!!!!
 
 #-----------------------------------
 #4-Ajouter la diversite comme variable Y supplementaire
+#ANOVA multivariee---------
 mod2<-manova(cbind(temp_moy, sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
 summary.aov(mod2)
 
+#PCA----------------
 pca_mod2<-prcomp((d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
 summary(pca_mod2)
-
 str(pca_mod2)
 
+#illustrer PCA-----------------
 dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(1,7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#CHANGER LEGENDE!!!!!!!!!!!!!!!!!
+
 #-----------------------------------
 #5-Possibilite quil y est une interaction entre la temperature et la salinite
 mod3<-manova(cbind(temp_moy, sal_moy,temp_moy*sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
 summary.aov(mod3)
-#devrait potentiellement faire une lm pour interpreter la relation qui est positive
+#devrait potentiellement faire une lm ou glm pour interpreter la relation si positive ?
 #COMMENT FAIRE UNE PCA POUR AVEC UNE RELATION INTERVARIABLE X ??????????
 
 #----------------------------------------
 #6-test avec seulement l autre variable Y
+#ANOVA multivaree----------------
 mod4<-manova(cbind(temp_moy, sal_moy) ~ esp_tot, data = d_gradient)
 summary.aov(mod2)
 
+#PCA------------------
 pca_mod4<-prcomp((d_gradient[,c(7:9)]), center=TRUE,scale=TRUE)
 summary(pca_mod2)
-
 str(pca_mod2)
 
+#illustrer PCA----------------
 dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod4,labels=rownames(d_gradient[,c(7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#CHANGER LA LEGENDE !!!!!!!!
+
+
+
 ###############################################
 #### Imager abondance espece par station
 ##############################################
+
 #est-ce que je devrais faire une carte qui represente pour chacune des especes elles sont presente a quel point dechantillonnage genre un enorme graphique de barplot
 #ou des graohique individuel de presence/absence et abondance en fonction des different point ce qui me donnerais une idee de la distribution => scatterplot
 
+#----------------------------------------------------------------
 #scatterplot pour chacune des especes----------------------------
+#comprend seulement espece mobile et peumobile
 #certaine especes ont ete prise en compte en terme de recouvrement donc comment faire la mm chose ?
+#faire le mm chose pour eux mais qui compare les pourcentages ? comment mettre en relation avec les autres especes
 
-#1-extraire les bonne donnes de la table peumobile=> valeurs max
+#1-extraire les bonne donnes de la table peumobile=> valeurs max-----
 max_pm_sql<-"
 SELECT ID, max(oursin) AS oursin, max(dollars_sable) AS dollars_sable, max(anemone_p) AS anemone_p, max(anemone_r) AS anemone_r, max(anemone_pb) AS anemone_pb, max(concombre_v) AS concombre_v, max(concombre_r) AS concombre_r, max(ver_noire) AS ver_noire,max(coraux_mou) AS coraux_mou
 FROM peumobile
@@ -457,22 +459,26 @@ GROUP BY ID
 max_pm<-dbGetQuery(connexion, max_pm_sql)
 head(max_pm)
 
-#2-faire une table qui rassemble toutes les donnnes
+#---------------------------------------------------------------
+#2-faire une table qui rassemble toutes les donnnes-------------
 ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
 colnames(ab_esp)[28]<-"zone"
 
-
-#3-boucle pour faire tous les scatterplot en mm temps
+#--------------------------------------------------------------
+#3-boucle pour faire tous les scatterplot en mm temps----------
 #marge entre les graphique sur la figure
 dev.off()#pour effecer la figure preceddament ouverte
 par(mar=c(4,4,5,2))#x,y,haut,bas
 par(mfrow=c(5,6))#combien de graphique par combien
 
 #VERIFIER SI IL UTILISE LES BONNES COLONNES ET COMMENT DONNER LE TITRE DES COLONNES SANS TOUTES LES ECRIRES A LA MAIN
+#PREMIER MET EN RELATION ID x ID MM SI JAI ENLEVER LA PREMIERE  COLONE = A CORRIGER
 for (i in 2:ncol(ab_esp)){
   plot(x=ab_esp$ID,y=ab_esp[,i], 
        xlab="ID", ylab="MaxN",main=(colnames(donnees_complet)[,i]))
 }
+
+
 
 ###############################################
 #### Manipulation donnees et analyse type sol
@@ -484,8 +490,8 @@ for (i in 2:ncol(ab_esp)){
 
 
 #Analyse multivaree--------------------
+#--------------------------------------------------------------
 #1-moyenne valeur de pourcentage de recouvrement---------------
-##VERIFIER POURCENTAGE SABLE !!!!!!!!!!!!!!
 moy_p_rec_sql<-"
 SELECT ID, avg(p_sable) AS pmoy_sable, avg(p_gravier) AS pmoy_gravier, avg(p_caillou) AS pmoy_caillou, avg(p_bloc) AS pmoy_bloc, avg(p_rochemere) AS pmoy_rochemere
 FROM recouvrement 
@@ -494,31 +500,37 @@ GROUP BY ID
 pmoy_rec<-dbGetQuery(connexion, moy_p_rec_sql)
 head(pmoy_rec)
 
+
+#--------------------------------
 #2-table sol---------------------
 sol<-cbind(donnees_complet$zone,pmoy_rec,esp_tot)
 colnames(sol)[1]<-"zone"
 summary(sol)
+
+#----------------------------------------------------------------------------------
 #3- faire un classement selon le pourcentage de substrat le plus eleve ---------------------
 #je veux que pour chacune des rangees il compare les 4 colones et identifie
-#celle avec le plus au pourcentage
+#celle avec le pourcentage le plus haut
+
+#QQC QUI NE FONCTIONNE PAS
 for (i in 1:nrow(sol)){
- if (sol$pmoy_sable[i]> (sol$pmoy_gravier & sol$pmoy_gravier & sol$pmoy_caillou & sol$pmoy_bloc & sol$pmoy_rochemere)){
+ if (sol$pmoy_sable[i]> (sol$pmoy_gravier[i] & sol$pmoy_caillou[i] & sol$pmoy_bloc[i] & sol$pmoy_rochemere[i])){
     sol$g_sub[i] <- "s"
     }
   else{
-    if (sol$pmoy_gravier[i]> (sol$pmoy_sable & sol$pmoy_caillou & sol$pmoy_bloc & sol$pmoy_rochemere)){
+    if (sol$pmoy_gravier[i]> (sol$pmoy_sable[i] & sol$pmoy_caillou[i] & sol$pmoy_bloc[i] & sol$pmoy_rochemere[i])){
       sol$g_sub[i] <- "g"
     }
     else{
-      if (sol$pmoy_caillou[i]> (sol$pmoy_sable & sol$pmoy_gravier & sol$pmoy_bloc & sol$pmoy_rochemere)){
+      if (sol$pmoy_caillou[i]> (sol$pmoy_sable[i] & sol$pmoy_gravier[i] & sol$pmoy_bloc[i] & sol$pmoy_rochemere[i])){
         sol$g_sub[i] <- "c"
       }
       else{
-        if (sol$pmoy_bloc[i]> (sol$pmoy_sable & sol$pmoy_gravier & sol$pmoy_caillou & sol$pmoy_rochemere)){
+        if (sol$pmoy_bloc[i]> (sol$pmoy_sable[i] & sol$pmoy_gravier[i] & sol$pmoy_caillou[i] & sol$pmoy_rochemere[i])){
           sol$g_sub[i] <- "b"
         }
         else{
-          if (sol$pmoy_rochemere[i]> (sol$pmoy_sable & sol$pmoy_gravier & sol$pmoy_caillou & sol$pmoy_bloc)){
+          if (sol$pmoy_rochemere[i]> (sol$pmoy_sable[i] & sol$pmoy_gravier[i] & sol$pmoy_caillou[i] & sol$pmoy_bloc[i])){
             sol$g_sub[i] <- "r"
           }
         }
@@ -528,106 +540,58 @@ for (i in 1:nrow(sol)){
 }
 
 
-#4-ANOVA et pca------------------------
+#--------------------------------------
+#4-ANOVA multivariee------------------------
 d_sol<-as.data.frame(sol)
 mod5<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ ID, data = d_sol)
 summary.aov(mod5)
 
+#PCA-------------------------
 pca_mod5<-prcomp((d_sol[,c(2:7)]), center=TRUE,scale=TRUE)
 summary(pca_mod5)
-
 str(pca_mod5)
 
+#illustrer PCA-----------------------------
 #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
 dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod5,labels=rownames(d_sol[,c(2:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
 
+#-------------------------------------------------------------------
 #5- en fonction de l autre variable y--------------------------------
+#ANOVA multivaree----------------
 d_sol<-as.data.frame(sol)
 mod6<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ esp_tot, data = d_sol)
 summary.aov(mod6)
 
+#PCA---------------------------
 pca_mod6<-prcomp((d_sol[,c(3:8)]), center=TRUE,scale=TRUE)
 summary(pca_mod6)
-
 str(pca_mod5)
 
+#illustrer PCA-------------------
 #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
 dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod6,labels=rownames(d_sol[,c(3:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 
+#--------------------------------------------------------------
 #6- avec les deux varaibles y ---------------------------------
+#ANOVA multivariee------------------------
 d_sol<-as.data.frame(sol)
 mod7<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
 summary.aov(mod7)
 
+#PCA--------------------------
 pca_mod7<-prcomp((d_sol[,c(2:8)]), center=TRUE,scale=TRUE)
 summary(pca_mod7)
-
 str(pca_mod7)
 
+#illustrer PCA---------------------
 #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
 dev.off()#effacer figure deja ouverte
 ggbiplot(pca_mod7,labels=rownames(d_sol[,c(2:8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$sub_zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-#===========================================
-#note de cours biometrie assite
-#===========================================
-#analyses
-#maximum likelihood
-#nous permet de trouver le modele ajuste qui decrit le mieux nos donnees
-#SSE
-#correspond a la variance dans les donnees qui nest pas expliquer par notre modele, on veut donc la reduire au maximum
-#SSY=SSr+SSE
-#SSY = observation i - observation moyenne
-#SSR (somme des carres du a la regression) = prediction i - observation moyenne
-#SSE = observation i - prediction  i
-#si les variables explicatives explique pas/peu y alors SSY=SSE
-#R^2 quantifie la proportion de la variance de y qui est prise en compte par les variables explicatives
-#R^2 = SSR/SSY = SSY-SSE /SSY
-#R^2 adj (ajuste) = 1- (1-R^2)((n-1)/n-k-1)
-#permet de tenir compte que la tendance a augmenter avec le nb de variables explicative **particulierement imoprtant si n est faible**
+#CHANGER LA LEGENDE !!!!!!!!!!!!!!!
 
-#determiner sil y a presence dune correlation ou simplement dune relation dans la regression
-#si correlation=> r=1 ou -1
-
-#ANOVA
-#compare la variance inter-traitement à celle intra-traitement
-#si inter > intra alors la variable explicative a un effet plus important que l'erreur aleatoire et est donc susceptible d'influencer significativement la variable reponse
-#anova permet de comparer des modeles nicher entre eux
-#=================================================
-
-#=====================
-#test de correlation
-#====================
-#on veut savoir sil y a une correlation entre le nb_esp et les types dhabitats
-#cor.test()
-#paarson, kendall, sperman
-
-
-#====================================
-#test danalyse possible
-#================================
-#####Régression lineraire ???
-#critere de base --------------
-#prealable-existance ---
-#y est une variable que nous avons echantillonne de facon aleatoire
-#moy_mobile=mean(mobile$nb_espece)
-#moy_peumobile=mean(peumobile$nb_espece)
-#var_mobile=var(mobile$nb_espece)
-#var_peumobile=var(peumobile$nb_espece)
-#mod_ind_mobile<-lm(mobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
-#summary(mod_ind_mobile)
-#anova(mod_ind_mobile)
-#mod_ind_peumobile<-lm(peumobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
-#summary(mod_ind_peumobile)
-#anova(mod_ind_peumobile)
-#prealable-independance--
-#les donnees ne sont pas necessairement independantes puisque les pourcentages de granulometrie sont complementaire
-#le pourcentage de recouvrement non_biotique pourrait egalement etre interrelier au pourcentage de granulo puisquil correspond lors de lanalyse des images pour le recouvrement biotique a tout ce qui ne letait pas et qui etait donc inevitablement granulo
-#FAIRE TEST CORRELATION !!!!!!!!!pour determiner les variables explicatives a utiliser
-#est-ce que si non respect independance = glm ou impossible => ANOVA ?
-#quelles sont les sortent dANOVA ?
-#mod_ind_mobile<-lm(mobile$nb_espece~recouvrement$p_non_biotique+recouvrement$p_sable+recouvrement$p_gravier+recouvrement$p_caillou+recouvrement$p_bloc+recouvrement$p_rochemere)
