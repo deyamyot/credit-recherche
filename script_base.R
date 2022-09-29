@@ -512,32 +512,26 @@ summary(sol)
 #je veux que pour chacune des rangees il compare les 4 colones et identifie
 #celle avec le pourcentage le plus haut
 
-#QQC QUI NE FONCTIONNE PAS
+#QQC QUI NE FONCTIONNE PAS NE FAIT QUE LES CLASSEES SELON LA PREMIERE COLONNE QUI NEST PAS EGALE A ZERO
 for (i in 1:nrow(sol)){
- if (sol$pmoy_sable[i]> (sol$pmoy_gravier[i] & sol$pmoy_caillou[i] & sol$pmoy_bloc[i] & sol$pmoy_rochemere[i])){
+ if ((sol[i,3])> (any(sol[i,c(4:7)]))){
     sol$g_sub[i] <- "s"
     }
-  else{
-    if (sol$pmoy_gravier[i]> (sol$pmoy_sable[i] & sol$pmoy_caillou[i] & sol$pmoy_bloc[i] & sol$pmoy_rochemere[i])){
+  else if ((sol[i,4])> (any(sol[i,c(3,5:7)]))){
       sol$g_sub[i] <- "g"
     }
-    else{
-      if (sol$pmoy_caillou[i]> (sol$pmoy_sable[i] & sol$pmoy_gravier[i] & sol$pmoy_bloc[i] & sol$pmoy_rochemere[i])){
+    else if ((sol[i,5])> (any(sol[i,c(3,4,6,7)]))){
         sol$g_sub[i] <- "c"
       }
-      else{
-        if (sol$pmoy_bloc[i]> (sol$pmoy_sable[i] & sol$pmoy_gravier[i] & sol$pmoy_caillou[i] & sol$pmoy_rochemere[i])){
+      else if ((sol[i,6])> (any(sol[i,c(3:5,7)]))){
           sol$g_sub[i] <- "b"
         }
-        else{
-          if (sol$pmoy_rochemere[i]> (sol$pmoy_sable[i] & sol$pmoy_gravier[i] & sol$pmoy_caillou[i] & sol$pmoy_bloc[i])){
+        else if((sol[i,7])> (any(sol[i,c(3:6)]))){
             sol$g_sub[i] <- "r"
-          }
+   
         }
-      }
-    }
-  }
 }
+
 
 
 #--------------------------------------
