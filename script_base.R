@@ -131,11 +131,11 @@ for( i in 1:nrow(recouvrement)){
 
 #recouvrement granulo
 for ( i in 1:nrow(recouvrement)){
-  recouvrement$p_sable<-((recouvrement[,13]/recouvrement[,19])*100)
-  recouvrement$p_gravier<-((recouvrement[,14]/recouvrement[,19])*100)
-  recouvrement$p_caillou<-((recouvrement[,15]/recouvrement[,19])*100)
-  recouvrement$p_bloc<-((recouvrement[,16]/recouvrement[,19])*100)
-  recouvrement$p_rochemere<-((recouvrement[,17]/recouvrement[,19])*100)
+  recouvrement$p_sable<-(recouvrement[,13]/recouvrement[,19])*100
+  recouvrement$p_gravier<-(recouvrement[,14]/recouvrement[,19])*100
+  recouvrement$p_caillou<-(recouvrement[,15]/recouvrement[,19])*100
+  recouvrement$p_bloc<-(recouvrement[,16]/recouvrement[,19])*100
+  recouvrement$p_rochemere<-(recouvrement[,17]/recouvrement[,19])*100
   i=i+1
 }
 
@@ -273,7 +273,7 @@ CREATE TABLE donnees_complet (
   profondeur_m REAL(8),
   temp_moy REAL(8),
   sal_moy REAL(8),
-  zone INTEGER (4)
+  zone INTEGER (4),
     PRIMARY KEY (ID)
 );'
 
@@ -325,6 +325,7 @@ esp_tot<-rowSums(gradient[,c(2:4)]) # matrice implique quon ne peut pas utiliser
 gradient<-cbind(gradient,esp_tot)
 summary(gradient)
 
+
 #------------------------------------
 #3-assomption manova
 #install.packages("micompr")
@@ -333,42 +334,42 @@ summary(gradient)
 #install.packages("rstatix")
 
 
-library(micompr)
-library(MVN)
-library(biotools)
-library(rstatix)
+#library(micompr)
+#library(MVN)
+#library(biotools)
+#library(rstatix)
 
 #EST CE QUE CEST CE QUE JE DOIS FAIRE ? HElP!
 #a)taille adequate de lechantillon = oui jai plus e lignes que de colonnes (9 X32)
 #b)independance des info = oui
 #c)absences de donnes aberrantes univarie et multivarie
-d_gradient<-as.data.frame(gradient)
+#d_gradient<-as.data.frame(gradient)
 #PK NE RECONNAIT PAS COMME UN DATA FRAME POUR LOPPERATION ALORS QUE IS.DATA.FRAME IS TRUE !!!!!!!!!!!!!!!!!!!!!
-identify_outliers(d_gradient[,7]) # univarie
-identify_outliers(gradient[,8])
-mahalanobis_distance()# multivarie
+#identify_outliers(d_gradient[,7]) # univarie
+#identify_outliers(gradient[,8])
+#mahalanobis_distance()# multivarie
 #d)normalite a plusieurs variable 
-mshapiro.test()
+#mshapiro.test()
 #d)absence de multicolinairite
 #e)linearite
 #f)homogeneite des variances = test de Levenne
 #g)homogeneite des matrice de variance-covariance= test boxM
 
 #supposer gerer toutes les assomptions en une seule fonction
-am<-assumptions_manova(gradient[,7:8],gradient[,1])
+#am<-assumptions_manova(gradient[,7:8],gradient[,1])
 
 #------------------------------------
 #4-analyse multivariees impact du gradient
 #ANOVA multivarie-------------
 
-mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
-summary.aov(mod1)
+#mod1<-manova(cbind(temp_moy, sal_moy) ~ ID, data = d_gradient)
+#summary.aov(mod1)
 
 #PCA-------------------
-pca_mod1<-prcomp((d_gradient[,c(1,7,8)]), center=TRUE,scale=TRUE)
-summary(pca_mod1)
+#pca_mod1<-prcomp((d_gradient[,c(1,7,8)]), center=TRUE,scale=TRUE)
+#summary(pca_mod1)
 #proportion variance = correspond *100 au pourcentage que PC1 explique de la variance totale
-str(pca_mod1)#permet de voir les objets de la PCA
+#str(pca_mod1)#permet de voir les objets de la PCA
 #The center point ($center), scaling ($scale), standard deviation(sdev) of each principal component
 #The relationship (correlation or anticorrelation, etc) between the initial variables and the principal components ($rotation)
 #The values of each sample in terms of the principal components ($x)
@@ -376,20 +377,20 @@ str(pca_mod1)#permet de voir les objets de la PCA
 #imager PCA-------------
 ##installation packages necessaire------
 #install.packages('ggplot2')
-library(ggplot2)
+#library(ggplot2)
 
 #install.packages("devtools", repo="http://cran.us.r-project.org")
-library(devtools)
+#library(devtools)
 
 #install_github("vqv/ggbiplot", force=TRUE)
-library(ggbiplot)
+#library(ggbiplot)
 
 ##plot PCA-------------
 #install.packages("yarrr")
-library("yarrr")#pour avoir acces a plus de couleurs entre autre :)
+#library("yarrr")#pour avoir acces a plus de couleurs entre autre :)
 
-dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+#dev.off()#effacer figure deja ouverte
+#ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #le label nous permet de situer chacune des stations
 #CHANGER LA LEGENDE !!!!!!!!!!!
@@ -397,42 +398,42 @@ ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale
 #-----------------------------------
 #4-Ajouter la diversite comme variable Y supplementaire
 #ANOVA multivariee---------
-mod2<-manova(cbind(temp_moy, sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
-summary.aov(mod2)
+#mod2<-manova(cbind(temp_moy, sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
+#summary.aov(mod2)
 
 #PCA----------------
-pca_mod2<-prcomp((d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
-summary(pca_mod2)
-str(pca_mod2)
+#pca_mod2<-prcomp((d_gradient[,c(1,7:9)]), center=TRUE,scale=TRUE)
+#summary(pca_mod2)
+#str(pca_mod2)
 
 #illustrer PCA-----------------
-dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(1,7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
-  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#dev.off()#effacer figure deja ouverte
+#ggbiplot(pca_mod2,labels=rownames(d_gradient[,c(1,7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+#  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #CHANGER LEGENDE!!!!!!!!!!!!!!!!!
 
 #-----------------------------------
 #5-Possibilite quil y est une interaction entre la temperature et la salinite
-mod3<-manova(cbind(temp_moy, sal_moy,temp_moy*sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
-summary.aov(mod3)
+#mod3<-manova(cbind(temp_moy, sal_moy,temp_moy*sal_moy) ~ cbind(ID,esp_tot), data = d_gradient)
+#summary.aov(mod3)
 #devrait potentiellement faire une lm ou glm pour interpreter la relation si positive ?
 #COMMENT FAIRE UNE PCA POUR AVEC UNE RELATION INTERVARIABLE X ??????????
 
 #----------------------------------------
 #6-test avec seulement l autre variable Y
 #ANOVA multivaree----------------
-mod4<-manova(cbind(temp_moy, sal_moy) ~ esp_tot, data = d_gradient)
-summary.aov(mod2)
+#mod4<-manova(cbind(temp_moy, sal_moy) ~ esp_tot, data = d_gradient)
+#summary.aov(mod2)
 
 #PCA------------------
-pca_mod4<-prcomp((d_gradient[,c(7:9)]), center=TRUE,scale=TRUE)
-summary(pca_mod2)
-str(pca_mod2)
+#pca_mod4<-prcomp((d_gradient[,c(7:9)]), center=TRUE,scale=TRUE)
+#summary(pca_mod2)
+#str(pca_mod2)
 
 #illustrer PCA----------------
-dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod4,labels=rownames(d_gradient[,c(7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
-  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#dev.off()#effacer figure deja ouverte
+#ggbiplot(pca_mod4,labels=rownames(d_gradient[,c(7:9)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
+#  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #CHANGER LA LEGENDE !!!!!!!!
 
 
@@ -514,78 +515,141 @@ summary(sol)
 
 #QQC QUI NE FONCTIONNE PAS NE FAIT QUE LES CLASSEES SELON LA PREMIERE COLONNE QUI NEST PAS EGALE A ZERO
 for (i in 1:nrow(sol)){
- if ((sol[i,3])> (any(sol[i,c(4:7)]))){
-    sol$g_sub[i] <- "s"
+ if ((sol[i,3])> (all(sol[i,c(4:7)]))){
+    sol$g_sub[i] <- "s" #sable
     }
-  else if ((sol[i,4])> (any(sol[i,c(3,5:7)]))){
-      sol$g_sub[i] <- "g"
+  else if ((sol[i,4])> (all(sol[i,c(3,5:7)]))){
+      sol$g_sub[i] <- "g" #gravier
     }
-    else if ((sol[i,5])> (any(sol[i,c(3,4,6,7)]))){
-        sol$g_sub[i] <- "c"
+    else if ((sol[i,5])> (all(sol[i,c(3,4,6,7)]))){
+        sol$g_sub[i] <- "c" #cailloux
       }
-      else if ((sol[i,6])> (any(sol[i,c(3:5,7)]))){
-          sol$g_sub[i] <- "b"
+      else if ((sol[i,6])> (all(sol[i,c(3:5,7)]))){
+          sol$g_sub[i] <- "b" #bloc
         }
-        else if((sol[i,7])> (any(sol[i,c(3:6)]))){
-            sol$g_sub[i] <- "r"
+        else if((sol[i,7])> (all(sol[i,c(3:6)]))){
+            sol$g_sub[i] <- "r" #rochemere
    
         }
 }
+
+#-------------------------------------------------------
+#4- boucle categorie pour les pourcentage de recouvrement biotique----------------
+#moyenne valeur de pourcentage de recouvrement biotique---------------
+moy_p_bio_sql<-"
+SELECT ID, avg(p_algue_r) AS pmoy_algue_r, avg(p_algue_b) AS pmoy_algue_b, avg(p_algue_v) AS pmoy_algue_v, avg(p_coralline) AS pmoy_coralline, avg(p_coquillage) AS pmoy_coquillage
+FROM recouvrement 
+GROUP BY ID
+;"
+pmoy_bio<-dbGetQuery(connexion, moy_p_bio_sql)
+head(pmoy_bio)
+
+#table sol---------------------
+bio<-cbind(donnees_complet$zone,pmoy_bio,esp_tot)
+colnames(bio)[1]<-"zone"
+summary(bio)
+
+#diviser en categorie-----------------
+for (i in 1:nrow(bio)){
+  if ((bio[i,3])> (all(bio[i,c(4:7)]))){
+    bio$b_sub[i] <- "r" #algue rouge
+  }
+  else if ((bio[i,4])> (all(bio[i,c(3,5:7)]))){
+    bio$b_sub[i] <- "b" #algue brune
+  }
+  else if ((bio[i,5])> (all(bio[i,c(3,4,6,7)]))){
+    bio$b_sub[i] <- "v" #algue verte
+  }
+  else if ((sol[i,6])> (all(sol[i,c(3:5,7)]))){
+    bio$b_sub[i] <- "c" #coralline
+  }
+  else if((sol[i,7])> (all(sol[i,c(3:6)]))){
+    bio$b_sub[i] <- "s" #coquillage
+    
+  }
+}
+
+###########################
+#PERMANOVA
+##########################
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 #--------------------------------------
 #4-ANOVA multivariee------------------------
-d_sol<-as.data.frame(sol)
-mod5<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ ID, data = d_sol)
-summary.aov(mod5)
+#d_sol<-as.data.frame(sol)
+#mod5<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ ID, data = d_sol)
+#summary.aov(mod5)
 
 #PCA-------------------------
-pca_mod5<-prcomp((d_sol[,c(2:7)]), center=TRUE,scale=TRUE)
-summary(pca_mod5)
-str(pca_mod5)
+#pca_mod5<-prcomp((d_sol[,c(2:7)]), center=TRUE,scale=TRUE)
+#summary(pca_mod5)
+#str(pca_mod5)
 
 #illustrer PCA-----------------------------
 #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod5,labels=rownames(d_sol[,c(2:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
-  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+# dev.off()#effacer figure deja ouverte
+# ggbiplot(pca_mod5,labels=rownames(d_sol[,c(2:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+#   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
 
 #-------------------------------------------------------------------
 #5- en fonction de l autre variable y--------------------------------
 #ANOVA multivaree----------------
-d_sol<-as.data.frame(sol)
-mod6<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ esp_tot, data = d_sol)
-summary.aov(mod6)
+# d_sol<-as.data.frame(sol)
+# mod6<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ esp_tot, data = d_sol)
+# summary.aov(mod6)
+# 
+# #PCA---------------------------
+# pca_mod6<-prcomp((d_sol[,c(3:8)]), center=TRUE,scale=TRUE)
+# summary(pca_mod6)
+# str(pca_mod5)
+# 
+# #illustrer PCA-------------------
+# #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
+# dev.off()#effacer figure deja ouverte
+# ggbiplot(pca_mod6,labels=rownames(d_sol[,c(3:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+#   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+# 
+# #--------------------------------------------------------------
+# #6- avec les deux varaibles y ---------------------------------
+# #ANOVA multivariee------------------------
+# d_sol<-as.data.frame(sol)
+# mod7<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
+# summary.aov(mod7)
+# 
+# #PCA--------------------------
+# pca_mod7<-prcomp((d_sol[,c(2:8)]), center=TRUE,scale=TRUE)
+# summary(pca_mod7)
+# str(pca_mod7)
+# 
+# #illustrer PCA---------------------
+# #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
+# dev.off()#effacer figure deja ouverte
+# ggbiplot(pca_mod7,labels=rownames(d_sol[,c(2:8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$sub_zone)+
+#   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+# #CHANGER LA LEGENDE !!!!!!!!!!!!!!!
 
-#PCA---------------------------
-pca_mod6<-prcomp((d_sol[,c(3:8)]), center=TRUE,scale=TRUE)
-summary(pca_mod6)
-str(pca_mod5)
 
-#illustrer PCA-------------------
-#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod6,labels=rownames(d_sol[,c(3:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
-  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 
-#--------------------------------------------------------------
-#6- avec les deux varaibles y ---------------------------------
-#ANOVA multivariee------------------------
-d_sol<-as.data.frame(sol)
-mod7<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
-summary.aov(mod7)
 
-#PCA--------------------------
-pca_mod7<-prcomp((d_sol[,c(2:8)]), center=TRUE,scale=TRUE)
-summary(pca_mod7)
-str(pca_mod7)
-
-#illustrer PCA---------------------
-#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-dev.off()#effacer figure deja ouverte
-ggbiplot(pca_mod7,labels=rownames(d_sol[,c(2:8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$sub_zone)+
-  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-#CHANGER LA LEGENDE !!!!!!!!!!!!!!!
-
+########################################
+#analyse que phil veut !!!!
+#######################################
+#********** utilisez SE *****************
+#1-permanova avec categorie pour % biotique et granulo + graphique scatterplot
+#2-distance lm illustrer avec DBRDA
+#3-PCA avec variables env
