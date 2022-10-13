@@ -107,7 +107,7 @@ recouvrement[90,11]<-52
 recouvrement[111,9]<-43
 recouvrement[111,11]<-11
 recouvrement[32,13]<-32
-recouvrement31[31,13]<-38
+recouvrement[31,13]<-38
 recouvrement[26,13]<-42
 recouvrement[25,13]<-33
 
@@ -391,7 +391,7 @@ summary(gradient)
 
 #dev.off()#effacer figure deja ouverte
 #ggbiplot(pca_mod1,labels=rownames(d_gradient[,c(1,7,8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=donnees_complet$zone)+
-  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
+#  scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
 #le label nous permet de situer chacune des stations
 #CHANGER LA LEGENDE !!!!!!!!!!!
 
@@ -468,9 +468,9 @@ colnames(ab_esp)[28]<-"zone"
 #--------------------------------------------------------------
 #3-boucle pour faire tous les scatterplot en mm temps----------
 #marge entre les graphique sur la figure
-dev.off()#pour effecer la figure preceddament ouverte
-par(mar=c(4,4,5,2))#x,y,haut,bas
-par(mfrow=c(5,6))#combien de graphique par combien
+# dev.off()#pour effecer la figure preceddament ouverte
+# par(mar=c(4,4,5,2))#x,y,haut,bas
+# par(mfrow=c(5,6))#combien de graphique par combien
 
 #VERIFIER SI IL UTILISE LES BONNES COLONNES ET COMMENT DONNER LE TITRE DES COLONNES SANS TOUTES LES ECRIRES A LA MAIN
 #PREMIER MET EN RELATION ID x ID MM SI JAI ENLEVER LA PREMIERE  COLONE = A CORRIGER
@@ -514,24 +514,26 @@ summary(sol)
 #celle avec le pourcentage le plus haut
 
 #QQC QUI NE FONCTIONNE PAS NE FAIT QUE LES CLASSEES SELON LA PREMIERE COLONNE QUI NEST PAS EGALE A ZERO
+
 for (i in 1:nrow(sol)){
- if ((sol[i,3])> (all(sol[i,c(4:7)]))){
-    sol$g_sub[i] <- "s" #sable
-    }
-  else if ((sol[i,4])> (all(sol[i,c(3,5:7)]))){
-      sol$g_sub[i] <- "g" #gravier
-    }
-    else if ((sol[i,5])> (all(sol[i,c(3,4,6,7)]))){
-        sol$g_sub[i] <- "c" #cailloux
-      }
-      else if ((sol[i,6])> (all(sol[i,c(3:5,7)]))){
-          sol$g_sub[i] <- "b" #bloc
-        }
-        else if((sol[i,7])> (all(sol[i,c(3:6)]))){
-            sol$g_sub[i] <- "r" #rochemere
-   
-        }
+if (((sol[i,3])> (sol[i,4]))& ((sol[i,3])> (sol[i,5]))& ((sol[i,3])> (sol[i,6]))&((sol[i,3])> (sol[i,7])))  {
+  sol$g_sub[i] <- "s" #sable
 }
+  else if (((sol[i,4])> (sol[i,3]))& ((sol[i,4])> (sol[i,5]))& ((sol[i,4])> (sol[i,6]))&((sol[i,4])> (sol[i,7]))){
+    sol$g_sub[i] <- "g" #gravier
+  }
+  else if (((sol[i,5])> (sol[i,3]))& ((sol[i,5])> (sol[i,6]))& ((sol[i,5])> (sol[i,7]))&((sol[i,5])> (sol[i,4]))){
+    sol$g_sub[i] <- "c" #cailloux
+  }
+  else if (((sol[i,6])> (sol[i,3]))& ((sol[i,6])> (sol[i,5]))& ((sol[i,6])> (sol[i,5]))&((sol[i,6])> (sol[i,7]))){
+    sol$g_sub[i] <- "b" #bloc
+  }
+  else if (((sol[i,7])> (sol[i,3]))& ((sol[i,7])> (sol[i,5]))& ((sol[i,7])> (sol[i,6]))&((sol[i,7])> (sol[i,4]))){
+    sol$g_sub[i] <- "r" #rochemere
+    
+  }
+}
+
 
 #-------------------------------------------------------
 #4- boucle categorie pour les pourcentage de recouvrement biotique----------------
@@ -551,20 +553,20 @@ summary(bio)
 
 #diviser en categorie-----------------
 for (i in 1:nrow(bio)){
-  if ((bio[i,3])> (all(bio[i,c(4:7)]))){
-    bio$b_sub[i] <- "r" #algue rouge
+  if (((bio[i,3])> (bio[i,4]))& ((bio[i,3])> (bio[i,5]))& ((bio[i,3])> (bio[i,6]))&((bio[i,3])> (bio[i,7])))  {
+    bio$g_sub[i] <- "r" #algue rouge
   }
-  else if ((bio[i,4])> (all(bio[i,c(3,5:7)]))){
-    bio$b_sub[i] <- "b" #algue brune
+  else if (((bio[i,4])> (bio[i,3]))& ((bio[i,4])> (bio[i,5]))& ((bio[i,4])> (bio[i,6]))&((bio[i,4])> (bio[i,7]))){
+    bio$g_sub[i] <- "b" #algue brune
   }
-  else if ((bio[i,5])> (all(bio[i,c(3,4,6,7)]))){
-    bio$b_sub[i] <- "v" #algue verte
+  else if (((bio[i,5])> (bio[i,3]))& ((bio[i,5])> (bio[i,6]))& ((bio[i,5])> (bio[i,7]))&((bio[i,5])> (bio[i,4]))){
+    bio$g_sub[i] <- "v" #algue brune
   }
-  else if ((sol[i,6])> (all(sol[i,c(3:5,7)]))){
-    bio$b_sub[i] <- "c" #coralline
+  else if (((bio[i,6])> (bio[i,3]))& ((bio[i,6])> (bio[i,5]))& ((bio[i,6])> (bio[i,5]))&((bio[i,6])> (bio[i,7]))){
+    bio$g_sub[i] <- "c" #coralline
   }
-  else if((sol[i,7])> (all(sol[i,c(3:6)]))){
-    bio$b_sub[i] <- "s" #coquillage
+  else if (((bio[i,7])> (bio[i,3]))& ((bio[i,7])> (bio[i,5]))& ((bio[i,7])> (bio[i,6]))&((bio[i,7])> (bio[i,4]))){
+    bio$g_sub[i] <- "s" #coquillage
     
   }
 }
