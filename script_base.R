@@ -461,23 +461,33 @@ max_pm<-dbGetQuery(connexion, max_pm_sql)
 head(max_pm)
 
 #---------------------------------------------------------------
-#2-faire une table qui rassemble toutes les donnnes-------------
+#2-faire une table qui rassemble toutes les donnnes dabondance-------------
 ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
 colnames(ab_esp)[28]<-"zone"
 
 #--------------------------------------------------------------
-#3-boucle pour faire tous les scatterplot en mm temps----------
-#marge entre les graphique sur la figure
-# dev.off()#pour effecer la figure preceddament ouverte
-# par(mar=c(4,4,5,2))#x,y,haut,bas
-# par(mfrow=c(5,6))#combien de graphique par combien
+#tableau abondance relative
+tot<-colSums(ab_esp[,c(2:27)])
+tot<-c("NA",tot, "NA")
+ab_esp<-rbind(ab_esp,tot)
+rownames(ab_esp)[33]<-"tot"
 
-#VERIFIER SI IL UTILISE LES BONNES COLONNES ET COMMENT DONNER LE TITRE DES COLONNES SANS TOUTES LES ECRIRES A LA MAIN
-#PREMIER MET EN RELATION ID x ID MM SI JAI ENLEVER LA PREMIERE  COLONE = A CORRIGER
-for (i in 2:ncol(ab_esp)){
-  plot(x=ab_esp$ID,y=ab_esp[,i], 
-       xlab="ID", ylab="MaxN",main=(colnames(donnees_complet)[,i]))
-}
+#je veux avoir une mesure de labondance relative en fonction des colones 
+#donc pour chaque espece pour chaque site
+library(dplyr)
+abr<- ab_esp[,-c(1,28)]
+abr<-abr%>%mutate_if(is.character,as.numeric)# pour regler l erreur de chiffre non binaire
+
+for (i in 1:32){
+  for (j in 1:ncol(abr)){
+    if( abr[33,j]==0 ){
+      abr[i,j]<-0
+    }
+      else { abr[i,j] <- (abr[i,j]/abr[33,j])
+      }
+    }
+  }
+
 
 
 
@@ -504,7 +514,8 @@ head(pmoy_rec)
 
 #--------------------------------
 #2-table sol---------------------
-sol<-cbind(donnees_complet$zone,pmoy_rec,esp_tot)
+abr<-abr[-33,]
+sol<-cbind(donnees_complet$zone,pmoy_rec,esp_tot,abr)
 colnames(sol)[1]<-"zone"
 summary(sol)
 
@@ -547,7 +558,7 @@ pmoy_bio<-dbGetQuery(connexion, moy_p_bio_sql)
 head(pmoy_bio)
 
 #table sol---------------------
-bio<-cbind(donnees_complet$zone,pmoy_bio,esp_tot)
+bio<-cbind(donnees_complet$zone,pmoy_bio,esp_tot,abr)
 colnames(bio)[1]<-"zone"
 summary(bio)
 
@@ -575,8 +586,9 @@ for (i in 1:nrow(bio)){
 #PERMANOVA
 ##########################
 
-
-
+#install.packages("vegan")
+library(vegan)
+adonis2(esp_tot~g_sub+abr, data=sol, distance="bray")
 
 
 
