@@ -586,125 +586,85 @@ for (i in 1:nrow(bio)){
 #PERMANOVA
 ##########################
 
+#A-selon type sol------------------------
 #1-modèle------------------------
 #install.packages("vegan")
 library(vegan)
 #assomptions ??????????????
-perm<-adonis2(sol[,9:34]~sol[,8]+sol[,35], distance="bray")
-summary(perm)
+perm_sol<-adonis2(sol[,9:34]~sol[,8]+sol[,35], distance="bray")
+summary(perm_sol)
 #comment analyser les resultats
 #est ce que ca devrait donner la mm chose lorsque j inverse les x
 #perm1<-adonis2(sol[,9:34]~sol[,35]+sol[,8], distance="bray")
 #perm2<-adonis2(sol[,9:34]~sol[,35], distance="bray")
 
 #2-illustration avec scatterplot---------------------
-plot(perm)
+plot(perm_sol)
 #il illustre les parametre quil fait ressortir de lanalyse permanova
 #il ne fait pas un graphique des x en fonction des y, estce que cest possible pcq cest multavire
 #ou limage que phil mavait montrer cetait pour la pca ?
 #plot(perm2)
 
+###########################################
+#B-selon type biotique-----------------
+#1-modèle------------------------
+perm_bio<-adonis2(bio[,9:34]~sol[,8]+sol[,35], distance="bray")
+summary(perm_bio)
+
+
+#2-illustration avec scatterplot---------------------
+plot(perm_bio)
+
+
 ###########################
 #DISTANCE LM
 ##########################
+
+#A-selon type sol---------------------------
 #lm ne fait pas partie des choix de distance !!!!! 
 #comment interpreter les resultats? power point seb ?
-dis<-vegdist(abr, method="bray")
+dis_sol<-vegdist(sol[,-c(1:7)], method="bray")
 #dbrda etait supposer etre une forme de graphique pas une autre analyse de distance
 #quelle graphique utiliser alors ?
 #comment interpreter les resultats?
-gdis<-dbrda(dis~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+db_dis_sol<-dbrda(dis~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+
+#################################
+#B-selon type biotique
+dis_bio<-vegdist(bio[,-c(1:7)], method="bray")
+db_dis_bio<-dbrda(dis~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+
 #########################
 #PCA 
 ########################
 
+#A-selon type sol------------------------------
 #1-PCA-------------------
-pca<-prcomp((sol[,c(9:34)]), center=TRUE)#fonctionne pas a cause du scale pcq peu pas diviser zero par infinie
-summary(pca)
-str(pca)
+pca_sol<-prcomp((sol[,c(9:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
+summary(pca_sol)
+str(pca_sol)
 
 #2-illustrer PCA-----------------------------
-#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-install.packages("devtools")
+#install.packages("devtools")
 library(devtools)
-install.packages("ggbiplot")
+#install.packages("ggbiplot")
 library(ggbiplot)
 
  dev.off()#effacer figure deja ouverte
- ggbiplot(pca,labels=rownames(sol[,c(9:34)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+ ggbiplot(pca_sol,labels=rownames(sol[,c(9:34)]),obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
    scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange","yellow"))
  #CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
 
+##########################
+#B-selon type sol-----------------------
+ #1-PCA-------------------
+ pca_bio<-prcomp((bio[,c(9:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
+ summary(pca_bio)
+ str(pca_bio)
+ 
+#2-illustrer PCA-----------------------------
+ dev.off()#effacer figure deja ouverte
+ ggbiplot(pca_bio,labels=rownames(sol[,c(9:34)]),obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange","yellow"))
+ #CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
 
-
-
-
-###########################
-###ANALYSE TEST
-############################
-
-#--------------------------------------
-#4-ANOVA multivariee------------------------
-#d_sol<-as.data.frame(sol)
-#mod5<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ ID, data = d_sol)
-#summary.aov(mod5)
-
-#PCA-------------------------
-#pca_mod5<-prcomp((d_sol[,c(2:7)]), center=TRUE,scale=TRUE)
-#summary(pca_mod5)
-#str(pca_mod5)
-
-#illustrer PCA-----------------------------
-#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-# dev.off()#effacer figure deja ouverte
-# ggbiplot(pca_mod5,labels=rownames(d_sol[,c(2:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
-#   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-# CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
-
-#-------------------------------------------------------------------
-#5- en fonction de l autre variable y--------------------------------
-#ANOVA multivaree----------------
-# d_sol<-as.data.frame(sol)
-# mod6<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ esp_tot, data = d_sol)
-# summary.aov(mod6)
-# 
-# #PCA---------------------------
-# pca_mod6<-prcomp((d_sol[,c(3:8)]), center=TRUE,scale=TRUE)
-# summary(pca_mod6)
-# str(pca_mod5)
-# 
-# #illustrer PCA-------------------
-# #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-# dev.off()#effacer figure deja ouverte
-# ggbiplot(pca_mod6,labels=rownames(d_sol[,c(3:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
-#   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-# 
-# #--------------------------------------------------------------
-# #6- avec les deux varaibles y ---------------------------------
-# #ANOVA multivariee------------------------
-# d_sol<-as.data.frame(sol)
-# mod7<-manova(cbind(pmoy_sable,pmoy_gravier,pmoy_caillou,pmoy_bloc,pmoy_rochemere) ~ cbind(ID,esp_tot), data = d_sol)
-# summary.aov(mod7)
-# 
-# #PCA--------------------------
-# pca_mod7<-prcomp((d_sol[,c(2:8)]), center=TRUE,scale=TRUE)
-# summary(pca_mod7)
-# str(pca_mod7)
-# 
-# #illustrer PCA---------------------
-# #delimitation des groupe devrait fonctionner lorsque boucle sera corriger
-# dev.off()#effacer figure deja ouverte
-# ggbiplot(pca_mod7,labels=rownames(d_sol[,c(2:8)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$sub_zone)+
-#   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-# #CHANGER LA LEGENDE !!!!!!!!!!!!!!!
-
-
-
-
-########################################
-#analyse que phil veut !!!!
-#######################################
-#********** utilisez SE *****************
-#1-permanova avec categorie pour % biotique et granulo + graphique scatterplot
-#2-distance lm illustrer avec DBRDA
-#3-PCA avec variables env
