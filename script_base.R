@@ -586,21 +586,62 @@ for (i in 1:nrow(bio)){
 #PERMANOVA
 ##########################
 
+#1-modèle------------------------
 #install.packages("vegan")
 library(vegan)
-adonis2(esp_tot~g_sub+abr, data=sol, distance="bray")
+#assomptions ??????????????
+perm<-adonis2(sol[,9:34]~sol[,8]+sol[,35], distance="bray")
+summary(perm)
+#comment analyser les resultats
+#est ce que ca devrait donner la mm chose lorsque j inverse les x
+#perm1<-adonis2(sol[,9:34]~sol[,35]+sol[,8], distance="bray")
+#perm2<-adonis2(sol[,9:34]~sol[,35], distance="bray")
+
+#2-illustration avec scatterplot---------------------
+plot(perm)
+#il illustre les parametre quil fait ressortir de lanalyse permanova
+#il ne fait pas un graphique des x en fonction des y, estce que cest possible pcq cest multavire
+#ou limage que phil mavait montrer cetait pour la pca ?
+#plot(perm2)
+
+###########################
+#DISTANCE LM
+##########################
+#lm ne fait pas partie des choix de distance !!!!! 
+#comment interpreter les resultats? power point seb ?
+dis<-vegdist(abr, method="bray")
+#dbrda etait supposer etre une forme de graphique pas une autre analyse de distance
+#quelle graphique utiliser alors ?
+#comment interpreter les resultats?
+gdis<-dbrda(dis~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+#########################
+#PCA 
+########################
+
+#1-PCA-------------------
+pca<-prcomp((sol[,c(9:34)]), center=TRUE)#fonctionne pas a cause du scale pcq peu pas diviser zero par infinie
+summary(pca)
+str(pca)
+
+#2-illustrer PCA-----------------------------
+#delimitation des groupe devrait fonctionner lorsque boucle sera corriger
+install.packages("devtools")
+library(devtools)
+install.packages("ggbiplot")
+library(ggbiplot)
+
+ dev.off()#effacer figure deja ouverte
+ ggbiplot(pca,labels=rownames(sol[,c(9:34)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
+   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange","yellow"))
+ #CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
 
 
 
 
 
-
-
-
-
-
-
-
+###########################
+###ANALYSE TEST
+############################
 
 #--------------------------------------
 #4-ANOVA multivariee------------------------
@@ -618,7 +659,7 @@ adonis2(esp_tot~g_sub+abr, data=sol, distance="bray")
 # dev.off()#effacer figure deja ouverte
 # ggbiplot(pca_mod5,labels=rownames(d_sol[,c(2:7)]), obs.scale=1, var.scale=1, ellipse=TRUE, groups=sol$g_sub)+
 #   scale_colour_manual(name= "pony",values=c("blue","purple2","pink","orange"))
-#CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
+# CHANGER LA LEGENDE  !!!!!!!!!!!!!!!
 
 #-------------------------------------------------------------------
 #5- en fonction de l autre variable y--------------------------------
