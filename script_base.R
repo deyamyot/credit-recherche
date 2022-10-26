@@ -623,16 +623,16 @@ plot(perm_bio)
 #A-selon type sol---------------------------
 #lm ne fait pas partie des choix de distance !!!!! 
 #comment interpreter les resultats? power point seb ?
-dis_sol<-vegdist(sol[,-c(1:7)], method="bray")
+dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
 #dbrda etait supposer etre une forme de graphique pas une autre analyse de distance
 #quelle graphique utiliser alors ?
 #comment interpreter les resultats?
-db_dis_sol<-dbrda(dis~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
 
 #################################
 #B-selon type biotique
-dis_bio<-vegdist(bio[,-c(1:7)], method="bray")
-db_dis_bio<-dbrda(dis~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+dis_bio<-vegdist(bio[,-c(1:7,35)], method="bray")
+db_dis_bio<-dbrda(dis_bio~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
 
 #########################
 #PCA 
