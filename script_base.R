@@ -358,7 +358,7 @@ bio<-cbind(donnees_complet$zone,pmoy_bio,esp_tot,abr)
 colnames(bio)[1]<-"zone"
 summary(bio)
 
-#diviser en categorie-----------------
+#diviser en categorie de pourcentage de recouvrement biotique-----------------
 for (i in 1:nrow(bio)){
   if (((bio[i,3])> (bio[i,4]))& ((bio[i,3])> (bio[i,5]))& ((bio[i,3])> (bio[i,6]))&((bio[i,3])> (bio[i,7])))  {
     bio$b_sub[i] <- "r" #algue rouge
@@ -384,9 +384,10 @@ for (i in 1:nrow(bio)){
 #A-SOL------------------------
 #install.packages("vegan")
 library(vegan)
-perm_sol<-adonis2(sol[,c(9:34)]~sol[,8]+sol[,35] + sol[,8]*sol[,35], distance="bray")
+#set.seed permutation
+set.seed(1)
+perm_sol<-adonis2(sol[,c(9:34)]~(sol[,8]+sol[,35] + sol[,8]*sol[,35]), distance="bray")
 summary(perm_sol)
-#perm2<-adonis2(sol[,9:34]~sol[,35], distance="bray")
 plot(perm_sol)
 
 ###########################################
@@ -397,42 +398,54 @@ plot(perm_bio)
 
 
 ###########################
-#DISTANCE LM
+#DISTANCE 
 ##########################
+#jai note distance lm mais est ce quil voulait dire hellinger ?????? pca lm existe pas !!
 #A-SOL---------------------------
-dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
-db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
-plot(db_dis_sol)
-ordiplot(db_dis_sol)
+# dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
+# db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+# plot(db_dis_sol)
+#ordiplot(db_dis_sol)
 #https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca_examples
+
+#meilleur disposition des point avec Hellinger
+dis_sol<-vegdist(sol[,-c(1:7,35)], method="hellinger")
+db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
+summary(db_dis_sol)
+plot(db_dis_sol)
 
 #################################
 #B-BIOTIQUE---------------
-dis_bio<-vegdist(bio[,-c(1:7,35)], method="bray")
-db_dis_bio<-dbrda(dis_bio~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+dis_bio<-vegdist(bio[,-c(1:7,35)], method="hellinger")
+db_dis_bio<-dbrda(dis_bio~g_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
+summary(db_dis_bio)
+plot(db_dis_bio)
+
 
 
 #########################
 #PCA 
 ########################
 #A-SOL------------------------------
-pca_sol<-prcomp((sol[,c(9:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
+#enlever amphipode pcq tire le graphique et calcul estimation plutot que MaxN
+pca_sol<-prcomp((sol[,c(9:26,28:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
 summary(pca_sol)
 str(pca_sol)
 #install.packages("ggfortify")
 #install.packages("factoextra")
 library(ggfortify)
 library(factoextra)
-fviz_pca_ind(pca_sol,habillage=sol$g_sub,col.ind="cos2")+scale_color_manual(values=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
-fviz_pca_var(pca_sol,col.var="contrib",gradient.cols=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
-fviz_pca_biplot(pca_sol,label="var", habillage=sol$g_sub ,addEllipses = TRUE, ellipse.level=0.95, col.ind=sol$g_sub)
+fviz_pca_ind(pca_sol,habillage=sol$g_sub,col.ind="cos2",repel=TRUE)+scale_color_manual(values=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
+fviz_pca_var(pca_sol,col.var="contrib",repel=TRUE,gradient.cols=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
+#warnings pcq surperposage des etiquettes
+fviz_pca_biplot(pca_sol,label="var", habillage=sol$g_sub, col.ind=sol$g_sub,repel=TRUE)
 
 ##########################
 #B-BIOTIQUE-----------------------
-pca_bio<-prcomp((bio[,c(9:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
+pca_bio<-prcomp((bio[,c(9:26,28:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
 summary(pca_bio)
 str(pca_bio)
 fviz_pca_ind(pca_bio,habillage=bio$b_sub,col.ind="cos2")+scale_color_manual(values=c("red4","cyan3","gold"))
 fviz_pca_var(pca_bio,col.var="contrib",gradient.cols=c("red4","cyan3","gold"))
-fviz_pca_biplot(pca_bio,label="var", habillage=sol$b_sub ,addEllipses = TRUE, ellipse.level=0.95, col.ind=sol$g_sub)
+fviz_pca_biplot(pca_bio,label="var", habillage=bio$b_sub,addEllispses=TRUE,ellipse.level=0.95, col.ind=bio$b_sub)#too few points to calculate a ellipse
 
