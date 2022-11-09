@@ -385,17 +385,19 @@ for (i in 1:nrow(bio)){
 #install.packages("vegan")
 library(vegan)
 #set.seed permutation
+x_sol<-paste0(sol[,c(9:34)])
+y_sol<-paste0(sol[,c(3:7)])
 set.seed(1)
-perm_sol<-adonis2(sol[,c(9:34)]~(sol[,8]+sol[,35] + sol[,8]*sol[,35]), distance="bray")
+perm_sol<-adonis2(sol[,c(3:7)]~sol[,9]+sol[,10]+sol[,11]+sol[,12]+sol[,13]+sol[,14]+sol[,15]+sol[,16]+sol[,17]+sol[,18]+sol[,19]+sol[,20]+sol[,21]+sol[,22]+sol[,23]+sol[,24]+sol[,25]+sol[,26]+sol[,27]+sol[,28]+sol[,29]+sol[,30]+sol[,31]+sol[,32]+sol[,33]+sol[,34], distance="bray")
 summary(perm_sol)
 plot(perm_sol)
 
 ###########################################
 #B-BIOTIQUE-----------------
-perm_bio<-adonis2(bio[,9:34]~sol[,8]+sol[,35], distance="bray")
+perm_bio<-adonis2(bio[,c(3:7)]~bio[,9]+bio[,10]+bio[,11]+bio[,12]+bio[,13]+bio[,14]+bio[,15]+bio[,16]+bio[,17]+bio[,18]+bio[,19]+bio[,20]+bio[,21]+bio[,22]+bio[,23]+bio[,24]+bio[,25]+bio[,26]+bio[,27]+bio[,28]+bio[,29]+bio[,30]+bio[,31]+bio[,32]+bio[,33]+bio[,34], distance="bray")
 summary(perm_bio)
 plot(perm_bio)
-
+#ligne 11 toutes des zeros
 
 ###########################
 #DISTANCE 
@@ -417,7 +419,7 @@ plot(db_dis_sol)
 #################################
 #B-BIOTIQUE---------------
 dis_bio<-vegdist(bio[,-c(1:7,35)], method="hellinger")
-db_dis_bio<-dbrda(dis_bio~g_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
+db_dis_bio<-dbrda(dis_bio~b_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
 summary(db_dis_bio)
 plot(db_dis_bio)
 
