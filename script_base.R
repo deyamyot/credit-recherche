@@ -277,7 +277,7 @@ summary(gradient)
 
 #---------------------------------------------------------------
 #3-faire une table qui rassemble toutes les donnnes dabondance-------------
-ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
+ab_esp<-as.data.frame(cbind(max_pm,mobile[,2:18],donnees_complet$zone))
 colnames(ab_esp)[28]<-"zone"
 
 #--------------------------------------------------------------
@@ -377,6 +377,61 @@ for (i in 1:nrow(bio)){
     
   }
 }
+
+#################
+#ordination
+#################
+#https://ourcodingclub.github.io/tutorials/ordination/
+#abondance pour chaque site en fonction des espèces 
+#utilisation de la table ab_esp
+ab_esp_bo<-ab_esp[,-c(1,28)]
+ab_esp_r<-ab_esp[,-c(1,28)]
+ab_esp_b<-ab_esp[,-c(1,28)]
+
+#install.packages("vegan")
+library(vegan)
+############################# avec donnees boolean
+#transformation de la table en valeur booleenne
+for (i in 1:nrow(ab_esp_bo)){
+  for (j in 1:ncol(ab_esp_bo)){
+    if( ab_esp_bo[i,j]>0 ){
+      ab_esp_bo[i,j]<-1
+    }
+  }
+}
+
+
+dis_esp_bo<-vegdist(ab_esp_bo, method="bray")
+ordiplot(dis_esp_bo)# x et y ?
+
+r_bo<-rank(dis_esp_bo)
+
+############################# avec donnees racine 4e
+for (i in 1:nrow(ab_esp_r)){
+  for (j in 1:ncol(ab_esp_r)){
+    if( ab_esp_r[i,j]>0 ){
+      ab_esp_r[i,j]<- (ab_esp_r[i,j]^(1/4))
+    }
+  }
+}
+
+dis_esp_r<-vegdist(ab_esp_r, method="bray")
+ordiplot(dis_esp_r)
+
+############################# avec donnees brutes
+dis_esp_b<-vegdist(ab_esp_b, method="bray")
+ordiplot(dis_esp_b)
+
+
+
+
+
+
+
+
+
+
+
 
 ###########################
 #PERMANOVA
