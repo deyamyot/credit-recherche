@@ -1,5 +1,5 @@
 #set working directory
-setwd("D:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche")
+setwd("C:/Users/deyam/Desktop/School/universite/S6/credit de recherche/credit2/credit-recherche")
 
 #######################################
 #importation data
@@ -98,7 +98,7 @@ for ( i in 1:nrow(recouvrement)){
 
 #install.packages('RSQLite')
 library(RSQLite)
-connexion <- dbConnect(SQLite(), dbname="D:/Audrey_Anne/Godbout_analyse/credit de recherche/gitcredit_recherche/lien.db")
+connexion <- dbConnect(SQLite(), dbname="C:/Users/deyam/Desktop/School/universite/S6/credit de recherche/credit2/credit-recherche/lien.db")
 
 
 dbSendQuery(connexion,"DROP TABLE mobile;") 
@@ -390,6 +390,8 @@ ab_esp_b<-ab_esp[,-c(1,28)]
 
 #install.packages("vegan")
 library(vegan)
+#install.packages("factoextra")
+library(factoextra)
 ############################# avec donnees boolean
 #transformation de la table en valeur booleenne
 for (i in 1:nrow(ab_esp_bo)){
@@ -403,8 +405,13 @@ for (i in 1:nrow(ab_esp_bo)){
 
 dis_esp_bo<-vegdist(ab_esp_bo, method="bray")
 ordiplot(dis_esp_bo)# x et y ?
+fviz_dist(dis_esp_bo)
+NDMS_bo<-metaMDS(ab_esp_bo, noshare=TRUE, autotransform=FALSE, trymax=1000)
+sppscores(NDMS_bo)<-ab_esp_bo
+ordiplot(NDMS_bo)
 
-r_bo<-rank(dis_esp_bo)
+res_hc_bo<-eclust(ab_esp_bo,FUNcluster="hclust")
+fviz_dend(res_hc_bo, rect=TRUE)
 
 ############################# avec donnees racine 4e
 for (i in 1:nrow(ab_esp_r)){
@@ -416,11 +423,28 @@ for (i in 1:nrow(ab_esp_r)){
 }
 
 dis_esp_r<-vegdist(ab_esp_r, method="bray")
-ordiplot(dis_esp_r)
+ordiplot(dis_esp_r)# x et y ?
+fviz_dist(dis_esp_r)
+NDMS_r<-metaMDS(ab_esp_r, noshare=TRUE, autotransform=FALSE, trymax=1000)
+sppscores(NDMS_r)<-ab_esp_r
+ordiplot(NDMS_r)
+
+res_hc_r<-eclust(ab_esp_r,FUNcluster="hclust")
+fviz_dend(res_hc_r)#pas le mm classement que quand boolean
+#message derreur lorsque rect=TRUE
+#k must be between 2 and 31 
+#est ce que pour ca toute de la mm couleur ? non supposer seulement ajouter les rectangle
 
 ############################# avec donnees brutes
 dis_esp_b<-vegdist(ab_esp_b, method="bray")
-ordiplot(dis_esp_b)
+ordiplot(dis_esp_b)# x et y ?
+fviz_dist(dis_esp_b)
+NDMS_b<-metaMDS(ab_esp_b, noshare=TRUE, autotransform=FALSE, trymax=1000)
+sppscores(NDMS_b)<-ab_esp_b
+ordiplot(NDMS_b)
+
+res_hc_b<-eclust(ab_esp_b,FUNcluster="hclust")
+fviz_dend(res_hc_b)#mm classement que pour racine 4e
 
 
 
