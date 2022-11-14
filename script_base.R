@@ -382,7 +382,8 @@ for (i in 1:nrow(bio)){
 #ordination
 #################
 #https://ourcodingclub.github.io/tutorials/ordination/
-#abondance pour chaque site en fonction des espèces 
+#https://www.datanovia.com/en/blog/cluster-analysis-in-r-simplified-and-enhanced/
+#abondance pour chaque site en fonction des especes 
 #utilisation de la table ab_esp
 ab_esp_bo<-ab_esp[,-c(1,28)]
 ab_esp_r<-ab_esp[,-c(1,28)]
@@ -404,11 +405,13 @@ for (i in 1:nrow(ab_esp_bo)){
 
 
 dis_esp_bo<-vegdist(ab_esp_bo, method="bray")
+# parfois probleme avec data numeric, donc relire ab_esp as.data.frame et ab_esp_bo <- 
+#verifier pk ne fonctionne pas a la premiere lecture
 ordiplot(dis_esp_bo)# x et y ?
 fviz_dist(dis_esp_bo)
 NDMS_bo<-metaMDS(ab_esp_bo, noshare=TRUE, autotransform=FALSE, trymax=1000)
 sppscores(NDMS_bo)<-ab_esp_bo
-ordiplot(NDMS_bo)
+ordiplot(NDMS_bo) # croix rouge = ajout poids esp, mais aussi changement dans positionnemet des poits why?
 
 res_hc_bo<-eclust(ab_esp_bo,FUNcluster="hclust")
 fviz_dend(res_hc_bo, rect=TRUE)
@@ -426,14 +429,11 @@ dis_esp_r<-vegdist(ab_esp_r, method="bray")
 ordiplot(dis_esp_r)# x et y ?
 fviz_dist(dis_esp_r)
 NDMS_r<-metaMDS(ab_esp_r, noshare=TRUE, autotransform=FALSE, trymax=1000)
-sppscores(NDMS_r)<-ab_esp_r
+#sppscores(NDMS_r)<-ab_esp_r #ajout de l'abondance des especes comme poids pour le placement des sites
 ordiplot(NDMS_r)
 
 res_hc_r<-eclust(ab_esp_r,FUNcluster="hclust")
-fviz_dend(res_hc_r)#pas le mm classement que quand boolean
-#message derreur lorsque rect=TRUE
-#k must be between 2 and 31 
-#est ce que pour ca toute de la mm couleur ? non supposer seulement ajouter les rectangle
+fviz_dend(res_hc_r, rect=TRUE)#pas le mm classement que quand boolean
 
 ############################# avec donnees brutes
 dis_esp_b<-vegdist(ab_esp_b, method="bray")
@@ -444,7 +444,7 @@ sppscores(NDMS_b)<-ab_esp_b
 ordiplot(NDMS_b)
 
 res_hc_b<-eclust(ab_esp_b,FUNcluster="hclust")
-fviz_dend(res_hc_b)#mm classement que pour racine 4e
+fviz_dend(res_hc_b)#juste une couleur ? biz a verifier 
 
 
 
@@ -462,71 +462,71 @@ fviz_dend(res_hc_b)#mm classement que pour racine 4e
 ##########################
 #A-SOL------------------------
 #install.packages("vegan")
-library(vegan)
-#set.seed permutation
-x_sol<-paste0(sol[,c(9:34)])
-y_sol<-paste0(sol[,c(3:7)])
-set.seed(1)
-perm_sol<-adonis2(sol[,c(3:7)]~sol[,9]+sol[,10]+sol[,11]+sol[,12]+sol[,13]+sol[,14]+sol[,15]+sol[,16]+sol[,17]+sol[,18]+sol[,19]+sol[,20]+sol[,21]+sol[,22]+sol[,23]+sol[,24]+sol[,25]+sol[,26]+sol[,27]+sol[,28]+sol[,29]+sol[,30]+sol[,31]+sol[,32]+sol[,33]+sol[,34], distance="bray")
-summary(perm_sol)
-plot(perm_sol)
-
-###########################################
-#B-BIOTIQUE-----------------
-perm_bio<-adonis2(bio[,c(3:7)]~bio[,9]+bio[,10]+bio[,11]+bio[,12]+bio[,13]+bio[,14]+bio[,15]+bio[,16]+bio[,17]+bio[,18]+bio[,19]+bio[,20]+bio[,21]+bio[,22]+bio[,23]+bio[,24]+bio[,25]+bio[,26]+bio[,27]+bio[,28]+bio[,29]+bio[,30]+bio[,31]+bio[,32]+bio[,33]+bio[,34], distance="bray")
-summary(perm_bio)
-plot(perm_bio)
-#ligne 11 toutes des zeros
-
-###########################
-#DISTANCE 
-##########################
-#jai note distance lm mais est ce quil voulait dire hellinger ?????? pca lm existe pas !!
-#A-SOL---------------------------
-# dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
-# db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+# library(vegan)
+# #set.seed permutation
+# x_sol<-paste0(sol[,c(9:34)])
+# y_sol<-paste0(sol[,c(3:7)])
+# set.seed(1)
+# perm_sol<-adonis2(sol[,c(3:7)]~sol[,9]+sol[,10]+sol[,11]+sol[,12]+sol[,13]+sol[,14]+sol[,15]+sol[,16]+sol[,17]+sol[,18]+sol[,19]+sol[,20]+sol[,21]+sol[,22]+sol[,23]+sol[,24]+sol[,25]+sol[,26]+sol[,27]+sol[,28]+sol[,29]+sol[,30]+sol[,31]+sol[,32]+sol[,33]+sol[,34], distance="bray")
+# summary(perm_sol)
+# plot(perm_sol)
+# 
+# ###########################################
+# #B-BIOTIQUE-----------------
+# perm_bio<-adonis2(bio[,c(3:7)]~bio[,9]+bio[,10]+bio[,11]+bio[,12]+bio[,13]+bio[,14]+bio[,15]+bio[,16]+bio[,17]+bio[,18]+bio[,19]+bio[,20]+bio[,21]+bio[,22]+bio[,23]+bio[,24]+bio[,25]+bio[,26]+bio[,27]+bio[,28]+bio[,29]+bio[,30]+bio[,31]+bio[,32]+bio[,33]+bio[,34], distance="bray")
+# summary(perm_bio)
+# plot(perm_bio)
+# #ligne 11 toutes des zeros
+# 
+# ###########################
+# #DISTANCE 
+# ##########################
+# #jai note distance lm mais est ce quil voulait dire hellinger ?????? pca lm existe pas !!
+# #A-SOL---------------------------
+# # dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
+# # db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+# # plot(db_dis_sol)
+# #ordiplot(db_dis_sol)
+# #https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca_examples
+# 
+# #meilleur disposition des point avec Hellinger
+# dis_sol<-vegdist(sol[,-c(1:7,35)], method="hellinger")
+# db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
+# summary(db_dis_sol)
 # plot(db_dis_sol)
-#ordiplot(db_dis_sol)
-#https://www.davidzeleny.net/anadat-r/doku.php/en:rda_cca_examples
-
-#meilleur disposition des point avec Hellinger
-dis_sol<-vegdist(sol[,-c(1:7,35)], method="hellinger")
-db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
-summary(db_dis_sol)
-plot(db_dis_sol)
-
-#################################
-#B-BIOTIQUE---------------
-dis_bio<-vegdist(bio[,-c(1:7,35)], method="hellinger")
-db_dis_bio<-dbrda(dis_bio~b_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
-summary(db_dis_bio)
-plot(db_dis_bio)
-
-
-
-#########################
-#PCA 
-########################
-#A-SOL------------------------------
-#enlever amphipode pcq tire le graphique et calcul estimation plutot que MaxN
-pca_sol<-prcomp((sol[,c(9:26,28:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
-summary(pca_sol)
-str(pca_sol)
-#install.packages("ggfortify")
-#install.packages("factoextra")
-library(ggfortify)
-library(factoextra)
-fviz_pca_ind(pca_sol,habillage=sol$g_sub,col.ind="cos2",repel=TRUE)+scale_color_manual(values=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
-fviz_pca_var(pca_sol,col.var="contrib",repel=TRUE,gradient.cols=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
-#warnings pcq surperposage des etiquettes
-fviz_pca_biplot(pca_sol,label="var", habillage=sol$g_sub, col.ind=sol$g_sub,repel=TRUE)
-
-##########################
-#B-BIOTIQUE-----------------------
-pca_bio<-prcomp((bio[,c(9:26,28:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
-summary(pca_bio)
-str(pca_bio)
-fviz_pca_ind(pca_bio,habillage=bio$b_sub,col.ind="cos2")+scale_color_manual(values=c("red4","cyan3","gold"))
-fviz_pca_var(pca_bio,col.var="contrib",gradient.cols=c("red4","cyan3","gold"))
-fviz_pca_biplot(pca_bio,label="var", habillage=bio$b_sub,addEllispses=TRUE,ellipse.level=0.95, col.ind=bio$b_sub)#too few points to calculate a ellipse
-
+# 
+# #################################
+# #B-BIOTIQUE---------------
+# dis_bio<-vegdist(bio[,-c(1:7,35)], method="hellinger")
+# db_dis_bio<-dbrda(dis_bio~b_sub+esp_tot, data=sol, dist="hellinger", squale=TRUE,sqrt.dsit=TRUE)
+# summary(db_dis_bio)
+# plot(db_dis_bio)
+# 
+# 
+# 
+# #########################
+# #PCA 
+# ########################
+# #A-SOL------------------------------
+# #enlever amphipode pcq tire le graphique et calcul estimation plutot que MaxN
+# pca_sol<-prcomp((sol[,c(9:26,28:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
+# summary(pca_sol)
+# str(pca_sol)
+# #install.packages("ggfortify")
+# #install.packages("factoextra")
+# library(ggfortify)
+# library(factoextra)
+# fviz_pca_ind(pca_sol,habillage=sol$g_sub,col.ind="cos2",repel=TRUE)+scale_color_manual(values=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
+# fviz_pca_var(pca_sol,col.var="contrib",repel=TRUE,gradient.cols=c("slateblue2","orchid","chocolate1","gold","yellowgreen"))
+# #warnings pcq surperposage des etiquettes
+# fviz_pca_biplot(pca_sol,label="var", habillage=sol$g_sub, col.ind=sol$g_sub,repel=TRUE)
+# 
+# ##########################
+# #B-BIOTIQUE-----------------------
+# pca_bio<-prcomp((bio[,c(9:26,28:34)]+gradient[,c(7,8)]), center=TRUE, scale=TRUE)
+# summary(pca_bio)
+# str(pca_bio)
+# fviz_pca_ind(pca_bio,habillage=bio$b_sub,col.ind="cos2")+scale_color_manual(values=c("red4","cyan3","gold"))
+# fviz_pca_var(pca_bio,col.var="contrib",gradient.cols=c("red4","cyan3","gold"))
+# fviz_pca_biplot(pca_bio,label="var", habillage=bio$b_sub,addEllispses=TRUE,ellipse.level=0.95, col.ind=bio$b_sub)#too few points to calculate a ellipse
+# 
