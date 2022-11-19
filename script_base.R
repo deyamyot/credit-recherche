@@ -271,7 +271,7 @@ head(max_pm)
 gradient<-cbind(mobile$ID,mobile$nb_esp,nb_esp_rec$nb_esp,nb_esp_pm$nb_esp,donnees_complet$coordonnee_x,donnees_complet$coordonnee_y,donnees_complet$temp_moy,donnees_complet$sal_moy)
 colnames(gradient)<-c("ID","esp_mobile","esp_rec","esp_peumobile","coordonne_x","coordonnne_y","temp_moy","sal_moy")
 esp_tot<-rowSums(gradient[,c(2:4)]) 
-gradient<-cbind(gradient,esp_tot)
+gradient<-as.data.frame(cbind(gradient,esp_tot))
 summary(gradient)
 
 
@@ -458,13 +458,14 @@ fviz_dend(res_hc_b)#pas le mm classement
 #install.packages("dbstats")
 library(dbstats)
 
-dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
-db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
-plot(db_dis_sol)
-
+#table regroupement variables env
+#temp+sal+recouvrement sol+recouvrment bio
+table_env<-as.data.frame(cbind(gradient$temp_moy,gradient$sal_moy,sol$pmoy_sable,sol$pmoy_gravier,sol$pmoy_caillou,sol$pmoy_bloc,sol$pmoy_rochemere, bio$pmoy_algue_r,bio$pmoy_algue_b,bio$pmoy_algue_v, bio$pmoy_coralline, bio$pmoy_coquillage))
+colnames(table_env)<-c("temp_moy", "sal_moy","pmoy_sable","pmoy_gravier","pmoy_caillou","pmoy_bloc","pmoy_rochemere","pmoy_algue_r","pmoy_algue_b","pmoy_algue_v","pmoy_coralline","pmoy_coquillage")
+#dbrda
 dis_bo<-vegdist(ab_esp_bo, method="bray")
-dbrda<-capscale(dis_bo~,ab_esp_bo, distance="bray")
-
+dbrda<-capscale(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+plot(dbrda)
 
 
 ###########################
