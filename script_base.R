@@ -277,13 +277,13 @@ summary(gradient)
 
 #---------------------------------------------------------------
 #3-faire une table qui rassemble toutes les donnnes dabondance-------------
-ab_esp<-as.data.frame(cbind(max_pm,mobile[,2:18],donnees_complet$zone))
+ab_esp<-cbind(max_pm,mobile[,2:18],donnees_complet$zone)
 colnames(ab_esp)[28]<-"zone"
 
 #--------------------------------------------------------------
 #4-tableau abondance relative
 tot<-colSums(ab_esp[,c(2:27)])
-tot<-c("NA",tot, "NA")
+tot<-as.numeric(c("NA",tot, "NA"))
 ab_esp<-rbind(ab_esp,tot)
 rownames(ab_esp)[33]<-"tot"
 
@@ -383,16 +383,19 @@ for (i in 1:nrow(bio)){
 #################
 #https://ourcodingclub.github.io/tutorials/ordination/
 #https://www.datanovia.com/en/blog/cluster-analysis-in-r-simplified-and-enhanced/
+#https://archetypalecology.wordpress.com/2018/02/18/non-metric-multidimensional-scaling-nmds-what-how/
 #abondance pour chaque site en fonction des especes 
 #utilisation de la table ab_esp
-ab_esp_bo<-ab_esp[,-c(1,28)]
-ab_esp_r<-ab_esp[,-c(1,28)]
-ab_esp_b<-ab_esp[,-c(1,28)]
+ab_esp_bo<-ab_esp[-33,-c(1,28)]#garder seulement les rangees et colones dabondance
+ab_esp_r<-ab_esp[-33,-c(1,28)]
+ab_esp_b<-ab_esp[-33,-c(1,28)]
 
 #install.packages("vegan")
 library(vegan)
 #install.packages("factoextra")
 library(factoextra)
+#install.packages("ggplot2")
+library(ggplot2)
 ############################# avec donnees boolean
 #transformation de la table en valeur booleenne
 for (i in 1:nrow(ab_esp_bo)){
@@ -404,14 +407,14 @@ for (i in 1:nrow(ab_esp_bo)){
 }
 
 
-dis_esp_bo<-vegdist(ab_esp_bo, method="bray")
-# parfois probleme avec data numeric, donc relire ab_esp as.data.frame et ab_esp_bo <- 
-#verifier pk ne fonctionne pas a la premiere lecture
-ordiplot(dis_esp_bo)# x et y ?
-fviz_dist(dis_esp_bo)
-NDMS_bo<-metaMDS(ab_esp_bo, noshare=TRUE, autotransform=FALSE, trymax=1000)
-sppscores(NDMS_bo)<-ab_esp_bo
-ordiplot(NDMS_bo) # croix rouge = ajout poids esp, mais aussi changement dans positionnemet des poits why?
+# dis_esp_bo<-vegdist(ab_esp_bo, method="bray")
+# ordiplot(dis_esp_bo)# x et y ?
+# fviz_dist(dis_esp_bo)
+NMDS_bo<-metaMDS(ab_esp_bo, noshare=TRUE, autotransform=FALSE, trymax=1000,trace=FALSE)
+sppscores(NMDS_bo)<-ab_esp_bo
+ordiplot(NMDS_bo, type="t") 
+stressplot(NMDS_bo)
+NMDS_bo$confdist
 
 res_hc_bo<-eclust(ab_esp_bo,FUNcluster="hclust")
 fviz_dend(res_hc_bo, rect=TRUE)
@@ -425,35 +428,42 @@ for (i in 1:nrow(ab_esp_r)){
   }
 }
 
-dis_esp_r<-vegdist(ab_esp_r, method="bray")
-ordiplot(dis_esp_r)# x et y ?
-fviz_dist(dis_esp_r)
-NDMS_r<-metaMDS(ab_esp_r, noshare=TRUE, autotransform=FALSE, trymax=1000)
-#sppscores(NDMS_r)<-ab_esp_r #ajout de l'abondance des especes comme poids pour le placement des sites
-ordiplot(NDMS_r)
+# dis_esp_r<-vegdist(ab_esp_r, method="bray")
+# ordiplot(dis_esp_r)# x et y ?
+# fviz_dist(dis_esp_r)
+NMDS_r<-metaMDS(ab_esp_r, noshare=TRUE, autotransform=FALSE, trymax=1000, trace=FALSE)#bray par defaut
+sppscores(NMDS_r)<-ab_esp_r 
+ordiplot(NMDS_r, type="t")
+stressplot(NMDS_r)
 
 res_hc_r<-eclust(ab_esp_r,FUNcluster="hclust")
-fviz_dend(res_hc_r, rect=TRUE)#pas le mm classement que quand boolean
+fviz_dend(res_hc_r, rect=TRUE)#pas le mm classement
 
 ############################# avec donnees brutes
-dis_esp_b<-vegdist(ab_esp_b, method="bray")
-ordiplot(dis_esp_b)# x et y ?
-fviz_dist(dis_esp_b)
-NDMS_b<-metaMDS(ab_esp_b, noshare=TRUE, autotransform=FALSE, trymax=1000)
-sppscores(NDMS_b)<-ab_esp_b
-ordiplot(NDMS_b)
+# dis_esp_b<-vegdist(ab_esp_b, method="bray")
+# ordiplot(dis_esp_b)# x et y ?
+# fviz_dist(dis_esp_b)
+NMDS_b<-metaMDS(ab_esp_b, noshare=TRUE, autotransform=FALSE, trymax=1000, trace=FALSE)
+sppscores(NMDS_b)<-ab_esp_b
+ordiplot(NMDS_b, type="t")
+stressplot(NMDS_b)
 
 res_hc_b<-eclust(ab_esp_b,FUNcluster="hclust")
-fviz_dend(res_hc_b)#juste une couleur ? biz a verifier 
+fviz_dend(res_hc_b)#pas le mm classement 
 
 
+############################
+#DISTLM
+#############################
+#install.packages("dbstats")
+library(dbstats)
 
+dis_sol<-vegdist(sol[,-c(1:7,35)], method="bray")
+db_dis_sol<-dbrda(dis_sol~g_sub+esp_tot, data=sol, dist="bray", squale=TRUE,sqrt.dsit=TRUE)
+plot(db_dis_sol)
 
-
-
-
-
-
+dis_bo<-vegdist(ab_esp_bo, method="bray")
+dbrda<-capscale(dis_bo~,ab_esp_bo, distance="bray")
 
 
 
