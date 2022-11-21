@@ -529,7 +529,13 @@ plot(dbrda_b) # enlever les amphipodes
 
 
 #simper
-
+#nous donne pour la comparaison des groupes
+#le pourcentage de contribution des esp a la distance entre les esp (bray) de la communaute
+#donc le pourcentage de contribution d'une esp a la moyenne de dissimilarite bray entre les groupes
+#les esp qui sont resorties correspondent a 70% de la difference entre les groupes
+sim_bo<-simper(ab_esp_bo,table_env$groupe_bo)
+sim_r<-simper(ab_esp_r,table_env$groupe_b)
+sim_b<-simper(ab_esp_b,table_env$groupe_r)
 
 ###########################
 #PERMANOVA
