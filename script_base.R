@@ -517,20 +517,20 @@ for (i in 1:nrow(table_env)){
   }
 }
 
-#dbrda booleen
+##dbrda booleen
 # dbrda_bo<-capscale(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
 # plot(dbrda_bo) 
 # summary(dbrda_bo)
-#dbrda racine 4e
+##dbrda racine 4e
 dbrda_r<-capscale(ab_esp_r~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
-plot(dbrda_r) 
+plot(dbrda_r)
 anova.cca(dbrda_r)
 summary(dbrda_r)
 #dbrda brute
-# dbrda_b<-capscale(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
-# plot(dbrda_b) 
-# anova.cca(dbrda_b)
-# summary(dbrda_b)
+dbrda_b<-capscale(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+plot(dbrda_b)
+anova.cca(dbrda_b)
+summary(dbrda_b)
 ############################
 #simper
 ###########################
@@ -551,6 +551,6 @@ sim_b
 #un par comparaison de groupe
 ab_esp_b<-as.matrix(ab_esp_b)
 n_col<-as.character(c(1:32,1:32))
-barplot_2_1<-barplot(ab_esp_b[,c(17,1)],beside=TRUE,names.arg=n_col, xlab="sites", ylab="MaxN",ylim=c(0,400))
+barplot_2_1<-barplot(ab_esp_b[,c(17,1)],beside=TRUE,names.arg=n_col, xlab="espèces", ylab="MaxN",ylim=c(0,400))
 
 
