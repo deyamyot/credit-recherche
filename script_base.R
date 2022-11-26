@@ -487,41 +487,35 @@ colnames(table_env)<-c("ID","temp_moy", "sal_moy","pmoy_sable","pmoy_gravier","p
 #   }
 # }
 
-#division selon racine 4e
-for (i in 1:nrow(table_env)){
-  if (table_env$ID[i]==22|table_env$ID[i]==3){
-    table_env$groupe_r[i]<-"1"
-  }
-  else if (table_env$ID[i]==13|table_env$ID[i]==17|table_env$ID[i]==23|table_env$ID[i]==15|table_env$ID[i]==16){
-    table_env$groupe_r[i]<-"2"
-  }
-  else if (table_env$ID[i]==10|table_env$ID[i]==22|table_env$ID[i]==4|table_env$ID[i]==1|table_env$ID[i]==6|table_env$ID[i]==5|table_env$ID[i]==8|table_env$ID[i]==9|table_env$ID[i]==7|table_env$ID[i]==11){
-    table_env$groupe_r[i]<-"3"
-  }
-
-  else {
-    table_env$groupe_r[i]<-"4"
-  }
-}
-
-#division selon brute
+# #division selon racine 4e
 # for (i in 1:nrow(table_env)){
-#   if (table_env$ID[i]==1|table_env$ID[i]==24){
-#     table_env$groupe_b[i]<-"1"
+#   if (table_env$ID[i]==22|table_env$ID[i]==3){
+#     table_env$groupe_r[i]<-"1"
 #   }
-#   else if (table_env$ID[i]==14|table_env$ID[i]==28|table_env$ID[i]==12|table_env$ID[i]==21|table_env$ID[i]==2|table_env$ID[i]==29|table_env$ID[i]==17|table_env$ID[i]==18|table_env$ID[i]==19|table_env$ID[i]==27){
-#     table_env$groupe_b[i]<-"2"
+#   else if (table_env$ID[i]==13|table_env$ID[i]==17|table_env$ID[i]==23|table_env$ID[i]==15|table_env$ID[i]==16){
+#     table_env$groupe_r[i]<-"2"
 #   }
-#   else if (table_env$ID[i]==4|table_env$ID[i]==7|table_env$ID[i]==11){
-#     table_env$groupe_b[i]<-"3"
+#   else if (table_env$ID[i]==10|table_env$ID[i]==22|table_env$ID[i]==4|table_env$ID[i]==1|table_env$ID[i]==6|table_env$ID[i]==5|table_env$ID[i]==8|table_env$ID[i]==9|table_env$ID[i]==7|table_env$ID[i]==11){
+#     table_env$groupe_r[i]<-"3"
 #   }
-#   else if (table_env$ID[i]==10|table_env$ID[i]==8|table_env$ID[i]==22|table_env$ID[i]==6|table_env$ID[i]==9){
-#     table_env$groupe_b[i]<-"4"
-#   }
+# 
 #   else {
-#     table_env$groupe_bo[i]<-"5"
+#     table_env$groupe_r[i]<-"4"
 #   }
 # }
+
+#division selon brute
+for (i in 1:nrow(table_env)){
+  if (table_env$ID[i]==16|table_env$ID[i]==13|table_env$ID[i]==17|table_env$ID[i]==23|table_env$ID[i]==28|table_env$ID[i]==30|table_env$ID[i]==10|table_env$ID[i]==4|table_env$ID[i]==7|table_env$ID[i]==11|table_env$ID[i]==25|table_env$ID[i]==5|table_env$ID[i]==8|table_env$ID[i]==26|table_env$ID[i]==6|table_env$ID[i]==9){
+    table_env$groupe_b[i]<-"1"
+  }
+  else if (table_env$ID[i]==31|table_env$ID[i]==20|table_env$ID[i]==22|table_env$ID[i]==29|table_env$ID[i]==32|table_env$ID[i]==29|table_env$ID[i]==15|table_env$ID[i]==21|table_env$ID[i]==19|table_env$ID[i]==27|table_env$ID[i]==1|table_env$ID[i]==24|table_env$ID[i]==12|table_env$ID[i]==14|table_env$ID[i]==18){
+    table_env$groupe_b[i]<-"2"
+  }
+  else {
+    table_env$groupe_bo[i]<-"3"
+  }
+}
 
 #dbrda booleen
 # dbrda_bo<-capscale(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
@@ -546,21 +540,17 @@ summary(dbrda_r)
 #donc le pourcentage de contribution d'une esp a la moyenne de dissimilarite bray entre les groupes
 #les esp qui sont resorties correspondent a 70% de la difference entre les groupes
 #sim_bo<-simper(ab_esp_bo,table_env$groupe_bo)
-sim_r<-simper(ab_esp_r,table_env$groupe_r)
-#sim_b<-simper(ab_esp_b,table_env$groupe_b)
+#sim_r<-simper(ab_esp_r,table_env$groupe_r)
+sim_b<-simper(ab_esp_b,table_env$groupe_b)
 
-sim_r
+sim_b
 ##################
 #histogramme
 #####################
 #selon les esp les plus importantes ressortie par simper 
 #un par comparaison de groupe
 ab_esp_b<-as.matrix(ab_esp_b)
-barplot_3_4<-barplot(ab_esp_b[,c(17,1,15,5,10)], xlab="espèces", ylab="MaxN",ylim=c(0,3000))#mm que pour 2_4 et 2_5
-barplot_3_1<-barplot(ab_esp_b[,c(17,1,10,3,21,23,9,5)], xlab="espèces", ylab="MaxN",ylim=c(0,3000))
-barplot_3_2<-barplot(ab_esp_b[,c(1,17,2,15,23)], xlab="espèces", ylab="MaxN",ylim=c(0,3000))
-barplot_4_1<-barplot(ab_esp_b[,c(1,17,15,10,5,3,9,23)], xlab="espèces", ylab="MaxN",ylim=c(0,3000))
-barplot_4_2<-barplot(ab_esp_b[,c(2,1,23,9,5,7,15,16)], xlab="espèces", ylab="MaxN",ylim=c(0,3000))
-barplot_1_2<-barplot(ab_esp_b[,c(1,17,15,2,10)], xlab="espèces", ylab="MaxN",ylim=c(0,3000))#mm esp pour 1_2 et 2_5 selon simper mais pas mm influence
+n_col<-as.character(c(1:32,1:32))
+barplot_2_1<-barplot(ab_esp_b[,c(17,1)],beside=TRUE,names.arg=n_col, xlab="sites", ylab="MaxN",ylim=c(0,400))
 
 
