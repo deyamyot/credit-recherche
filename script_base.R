@@ -418,7 +418,7 @@ stressplot(NMDS_bo)
 
 
 s_bo<-scale(ab_esp_bo)
-res_hc_bo<-eclust(s_bo,FUNcluster="hclust")
+res_hc_bo<-eclust(s_bo,FUNcluster="hclust", method="bray")
 fviz_dend(res_hc_bo, resct=TRUE)
 
 ############################# avec donnees racine 4e
@@ -440,7 +440,7 @@ ordiplot(NMDS_r, type="t")
 stressplot(NMDS_r)
 
 s_r<-scale(ab_esp_r)
-res_hc_r<-eclust(s_r,FUNcluster="hclust")
+res_hc_r<-eclust(s_r,FUNcluster="hclust",method="bray")
 fviz_dend(res_hc_r)#pas le mm classement
 
 ############################# avec donnees brutes
@@ -453,15 +453,10 @@ NMDS_b
 ordiplot(NMDS_b, type="t")
 stressplot(NMDS_b)
 
-scores(NMDS_b,display="sites")
-
 s_b<-scale(ab_esp_b)
-res_hc_b<-eclust(s_b,FUNcluster="hclust")
+res_hc_b<-eclust(s_b,FUNcluster="hclust", method="bray")
 fviz_dend(res_hc_b)#pas le mm classement 
 
-#https://www.statology.org/hierarchical-clustering-in-r/
-s_b_b<-(agnes(s_b,diss=inherits(s_b,"bray")))
-fviz_dend(s_b_b,cex = 0.6, hang = -1, main = "Dendrogram")
 ############################
 #DISTLM
 #############################
@@ -526,17 +521,19 @@ for (i in 1:nrow(table_env)){
 }
 
 #dbrda booleen
-dbrda_bo<-capscale(ab_esp_bo[,-19]~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
-plot(dbrda_bo) # enlever les amphipodes
-
+dbrda_bo<-capscale(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+plot(dbrda_bo) 
+summary(dbrda_bo)
 #dbrda racine 4e
-dbrda_r<-capscale(ab_esp_r[,-19]~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
-plot(dbrda_r) # enlever les amphipodes
-
+dbrda_r<-capscale(ab_esp_r~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+plot(dbrda_r) 
+anova.cca(dbrda_r)
+summary(dbrda_r)
 #dbrda brute
-dbrda_b<-capscale(ab_esp_b[,-19]~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
-plot(dbrda_b) # enlever les amphipodes
-
+dbrda_b<-capscale(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+plot(dbrda_b) 
+anova.cca(dbrda_b)
+summary(dbrda_b)
 ############################
 #simper
 ###########################
