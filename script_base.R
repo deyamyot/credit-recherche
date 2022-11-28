@@ -504,37 +504,57 @@ colnames(table_env)<-c("ID","temp_moy", "sal_moy","pmoy_sable","pmoy_gravier","p
 #   }
 # }
 
-#division selon brute
-for (i in 1:nrow(table_env)){
-  if (table_env$ID[i]==16|table_env$ID[i]==13|table_env$ID[i]==17|table_env$ID[i]==23|table_env$ID[i]==28|table_env$ID[i]==30|table_env$ID[i]==10|table_env$ID[i]==4|table_env$ID[i]==7|table_env$ID[i]==11|table_env$ID[i]==25|table_env$ID[i]==5|table_env$ID[i]==8|table_env$ID[i]==26|table_env$ID[i]==6|table_env$ID[i]==9){
-    table_env$groupe_b[i]<-"1"
-  }
-  else if (table_env$ID[i]==31|table_env$ID[i]==20|table_env$ID[i]==22|table_env$ID[i]==29|table_env$ID[i]==32|table_env$ID[i]==29|table_env$ID[i]==15|table_env$ID[i]==21|table_env$ID[i]==19|table_env$ID[i]==27|table_env$ID[i]==1|table_env$ID[i]==24|table_env$ID[i]==12|table_env$ID[i]==14|table_env$ID[i]==18){
-    table_env$groupe_b[i]<-"2"
-  }
-  else {
-    table_env$groupe_bo[i]<-"3"
-  }
-}
+
+
+# #division selon brute
+# for (i in 1:nrow(table_env)){
+#   if (table_env$ID[i]==16|table_env$ID[i]==13|table_env$ID[i]==17|table_env$ID[i]==23|table_env$ID[i]==28|table_env$ID[i]==30|table_env$ID[i]==10|table_env$ID[i]==4|table_env$ID[i]==7|table_env$ID[i]==11|table_env$ID[i]==25|table_env$ID[i]==5|table_env$ID[i]==8|table_env$ID[i]==26|table_env$ID[i]==6|table_env$ID[i]==9){
+#     table_env$groupe_b[i]<-"1"
+#   }
+#   else if (table_env$ID[i]==31|table_env$ID[i]==20|table_env$ID[i]==22|table_env$ID[i]==29|table_env$ID[i]==32|table_env$ID[i]==29|table_env$ID[i]==15|table_env$ID[i]==21|table_env$ID[i]==19|table_env$ID[i]==27|table_env$ID[i]==1|table_env$ID[i]==24|table_env$ID[i]==12|table_env$ID[i]==14|table_env$ID[i]==18){
+#     table_env$groupe_b[i]<-"2"
+#   }
+#   else {
+#     table_env$groupe_bo[i]<-"3"
+#   }
+# }
 
 ##dbrda booleen
-# dbrda_bo<-capscale(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+# dbrda_bo<-dbrda(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+# sppscores(dbrda_bo)<-ab_esp_bo
 # plot(dbrda_bo) 
 # summary(dbrda_bo)
 ##dbrda racine 4e
-dbrda_r<-capscale(ab_esp_r~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+dbrda_r<-dbrda(ab_esp_r~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dist=TRUE)
+sppscores(dbrda_r)<-ab_esp_r
 plot(dbrda_r)
 anova.cca(dbrda_r)
 summary(dbrda_r)
 #dbrda brute
-dbrda_b<-capscale(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+dbrda_b<-dbrda(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
+sppscores(dbrda_b)<-ab_esp_b
 plot(dbrda_b)
-anova.cca(dbrda_b)
+#anova.cca(dbrda_b)
 summary(dbrda_b)
 ############################
 #simper
 ###########################
-
+#selon dbRDA
+#division selon brute
+for (i in 1:nrow(table_env)){
+  if (table_env$ID[i]==7|table_env$ID[i]==11|table_env$ID[i]==9|table_env$ID[i]==8|table_env$ID[i]==22|table_env$ID[i]==10|table_env$ID[i]==4|table_env$ID[i]==6){
+    table_env$groupe_b[i]<-"1"
+  }
+  else if (table_env$ID[i]==1|table_env$ID[i]==24|table_env$ID[i]==12|table_env$ID[i]==21|table_env$ID[i]==14|table_env$ID[i]==28|table_env$ID[i]==19|table_env$ID[i]==18|table_env$ID[i]==17|table_env$ID[i]==27|table_env$ID[i]==29|table_env$ID[i]==2){
+    table_env$groupe_b[i]<-"2"
+  }
+  else if (table_env$ID[i]==15|table_env$ID[i]==20|table_env$ID[i]==23|table_env$ID[i]==26|table_env$ID[i]==25|table_env$ID[i]==31|table_env$ID[i]==30|table_env$ID[i]==32){
+    table_env$groupe_b[i]<-"3"
+  }
+  else {
+    table_env$groupe_b[i]<-"4"
+  }
+}
 #nous donne pour la comparaison des groupes
 #le pourcentage de contribution des esp a la distance entre les esp (bray) de la communaute
 #donc le pourcentage de contribution d'une esp a la moyenne de dissimilarite bray entre les groupes
@@ -550,7 +570,9 @@ sim_b
 #selon les esp les plus importantes ressortie par simper 
 #un par comparaison de groupe
 ab_esp_b<-as.matrix(ab_esp_b)
-n_col<-as.character(c(1:32,1:32))
-barplot_2_1<-barplot(ab_esp_b[,c(17,1)],beside=TRUE,names.arg=n_col, xlab="espèces", ylab="MaxN",ylim=c(0,400))
+n_site<-as.character(1:32)
+barplot_amphipode<-barplot(ab_esp_b[,17],beside=TRUE,names.arg=n_site, xlab="amphipode", ylab="MaxN",ylim=c(0,400))
+barplot_oursin<-barplot(ab_esp_b[,1],beside=TRUE,names.arg=n_site, xlab="oursins", ylab="MaxN",ylim=c(0,400))
+barplot_dollars<-barplot(ab_esp_b[,2],beside=TRUE,names.arg=n_site, xlab="dollars_sable", ylab="MaxN",ylim=c(0,400))
 
 
