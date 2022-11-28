@@ -413,13 +413,13 @@ for (i in 1:nrow(ab_esp_bo)){
 NMDS_bo<-metaMDS(ab_esp_bo,distance="bray",k=2, noshare=TRUE, trymax=1000,trace=FALSE)
 sppscores(NMDS_bo)<-ab_esp_bo
 NMDS_bo
-ordiplot(NMDS_bo, type="t") 
-stressplot(NMDS_bo)
+ordiplot(NMDS_bo, type="t", main="Ordination selon la matrice présence-absence") 
+stressplot(NMDS_bo, main="stress de l'ordination présence-absence")
 
 
-s_bo<-scale(ab_esp_bo)
-res_hc_bo<-eclust(s_bo,FUNcluster="hclust", method="bray")
-fviz_dend(res_hc_bo, resct=TRUE)
+# s_bo<-scale(ab_esp_bo)
+# res_hc_bo<-eclust(s_bo,FUNcluster="hclust", method="bray")
+# fviz_dend(res_hc_bo, resct=TRUE)
 
 ############################# avec donnees racine 4e
 for (i in 1:nrow(ab_esp_r)){
@@ -436,12 +436,12 @@ for (i in 1:nrow(ab_esp_r)){
 NMDS_r<-metaMDS(ab_esp_r, distance="bray",k=2, noshare=TRUE, trymax=1000, trace=FALSE)#bray par defaut
 sppscores(NMDS_r)<-ab_esp_r 
 NMDS_r
-ordiplot(NMDS_r, type="t")
-stressplot(NMDS_r)
+ordiplot(NMDS_r, type="t", main="Ordination selon la matrice racine quatrième")
+stressplot(NMDS_r, main="Stress de l'ordination racine quatrième")
 
-s_r<-scale(ab_esp_r)
-res_hc_r<-eclust(s_r,FUNcluster="hclust",method="bray")
-fviz_dend(res_hc_r)#pas le mm classement
+# s_r<-scale(ab_esp_r)
+# res_hc_r<-eclust(s_r,FUNcluster="hclust",method="bray")
+# fviz_dend(res_hc_r)#pas le mm classement
 
 ############################# avec donnees brutes
 # dis_esp_b<-vegdist(ab_esp_b, method="bray")
@@ -450,12 +450,12 @@ fviz_dend(res_hc_r)#pas le mm classement
 NMDS_b<-metaMDS(ab_esp_b, noshare=TRUE, distance="bray",k=2, trymax=1000, trace=FALSE)
 sppscores(NMDS_b)<-ab_esp_b
 NMDS_b
-ordiplot(NMDS_b, type="t")
-stressplot(NMDS_b)
+ordiplot(NMDS_b, type="t", main="Ordination selon la matrice de données brute")
+stressplot(NMDS_b, main="stress de l'ordination brute")
 
 s_b<-scale(ab_esp_b)
 res_hc_b<-eclust(s_b,FUNcluster="hclust", method="bray")
-fviz_dend(res_hc_b)#pas le mm classement 
+fviz_dend(res_hc_b,cex=0.5,k_colors="black")#pas le mm classement 
 
 ############################
 #DISTLM
@@ -518,43 +518,47 @@ colnames(table_env)<-c("ID","temp_moy", "sal_moy","pmoy_sable","pmoy_gravier","p
 #     table_env$groupe_bo[i]<-"3"
 #   }
 # }
-
+#division selon brute
+for (i in 1:nrow(table_env)){
+  if (table_env$ID[i]==16|table_env$ID[i]==13|table_env$ID[i]==17|table_env$ID[i]==23){
+    table_env$groupe_b[i]<-"1"
+  }
+  else if (table_env$ID[i]==28|table_env$ID[i]==30){
+    table_env$groupe_b[i]<-"2"
+  }
+  else if (table_env$ID[i]==10|table_env$ID[i]==4|table_env$ID[i]==7|table_env$ID[i]==11|table_env$ID[i]==25|table_env$ID[i]==5|table_env$ID[i]==8|table_env$ID[i]==26|table_env$ID[i]==6|table_env$ID[i]==9){
+    table_env$groupe_b[i]<-"3"
+  }
+  else if (table_env$ID[i]==31|table_env$ID[i]==20|table_env$ID[i]==22|table_env$ID[i]==29|table_env$ID[i]==32|table_env$ID[i]==15|table_env$ID[i]==21|table_env$ID[i]==19|table_env$ID[i]==27|table_env$ID[i]==1|table_env$ID[i]==24|table_env$ID[i]==12|table_env$ID[i]==14|table_env$ID[i]==18){
+    table_env$groupe_b[i]<-"4"
+  }
+  else {
+    table_env$groupe_b[i]<-"5"
+  }
+}
 ##dbrda booleen
 # dbrda_bo<-dbrda(ab_esp_bo~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
 # sppscores(dbrda_bo)<-ab_esp_bo
 # plot(dbrda_bo) 
 # summary(dbrda_bo)
 ##dbrda racine 4e
-dbrda_r<-dbrda(ab_esp_r~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dist=TRUE)
-sppscores(dbrda_r)<-ab_esp_r
-plot(dbrda_r)
-anova.cca(dbrda_r)
-summary(dbrda_r)
+# dbrda_r<-dbrda(ab_esp_r~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dist=TRUE)
+# sppscores(dbrda_r)<-ab_esp_r
+# plot(dbrda_r)
+# anova.cca(dbrda_r)
+# summary(dbrda_r)
 #dbrda brute
 dbrda_b<-dbrda(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
 sppscores(dbrda_b)<-ab_esp_b
-plot(dbrda_b)
+plot(dbrda_b, main="Bray-Curtis selon les facteurs environnementaux",)
+#fviz_plot(dbrda_b,label="var", habillage=sol$g_sub ,addEllipses = TRUE, ellipse.level=0.95, col.ind=sol$g_sub)
 #anova.cca(dbrda_b)
 summary(dbrda_b)
 ############################
 #simper
 ###########################
-#selon dbRDA
-#division selon brute
-for (i in 1:nrow(table_env)){
-  if (table_env$ID[i]==7|table_env$ID[i]==11|table_env$ID[i]==9|table_env$ID[i]==8|table_env$ID[i]==22|table_env$ID[i]==10|table_env$ID[i]==4|table_env$ID[i]==6){
-    table_env$groupe_b[i]<-"1"
-  }
-  else if (table_env$ID[i]==1|table_env$ID[i]==24|table_env$ID[i]==12|table_env$ID[i]==21|table_env$ID[i]==14|table_env$ID[i]==28|table_env$ID[i]==19|table_env$ID[i]==18|table_env$ID[i]==17|table_env$ID[i]==27|table_env$ID[i]==29|table_env$ID[i]==2){
-    table_env$groupe_b[i]<-"2"
-  }
-  else if (table_env$ID[i]==15|table_env$ID[i]==20|table_env$ID[i]==23|table_env$ID[i]==26|table_env$ID[i]==25|table_env$ID[i]==31|table_env$ID[i]==30|table_env$ID[i]==32){
-    table_env$groupe_b[i]<-"3"
-  }
-  else {
-    table_env$groupe_b[i]<-"4"
-  }
-}
+
+
 #nous donne pour la comparaison des groupes
 #le pourcentage de contribution des esp a la distance entre les esp (bray) de la communaute
 #donc le pourcentage de contribution d'une esp a la moyenne de dissimilarite bray entre les groupes
@@ -562,8 +566,8 @@ for (i in 1:nrow(table_env)){
 #sim_bo<-simper(ab_esp_bo,table_env$groupe_bo)
 #sim_r<-simper(ab_esp_r,table_env$groupe_r)
 sim_b<-simper(ab_esp_b,table_env$groupe_b)
+summary(sim_b, ordered=TRUE)
 
-sim_b
 ##################
 #histogramme
 #####################
