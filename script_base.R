@@ -549,8 +549,9 @@ for (i in 1:nrow(table_env)){
 # summary(dbrda_r)
 #dbrda brute
 dbrda_b<-dbrda(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
-sppscores(dbrda_b)<-ab_esp_b
-plot(dbrda_b, main="Bray-Curtis selon les facteurs environnementaux",)
+#sppscores(dbrda_b)<-ab_esp_b
+plot(dbrda_b, main="Bray-Curtis selon les facteurs environnementaux",col=factor(table_env$groupe_b))
+#legend("topleft",legend=levels(factor(table_env$groupe_b)),pch=19,col=factor(levels(factor(table_env$groupe_b))))
 #fviz_plot(dbrda_b,label="var", habillage=sol$g_sub ,addEllipses = TRUE, ellipse.level=0.95, col.ind=sol$g_sub)
 #anova.cca(dbrda_b)
 summary(dbrda_b)
@@ -573,10 +574,53 @@ summary(sim_b, ordered=TRUE)
 #####################
 #selon les esp les plus importantes ressortie par simper 
 #un par comparaison de groupe
+#abondance par site
 ab_esp_b<-as.matrix(ab_esp_b)
 n_site<-as.character(1:32)
-barplot_amphipode<-barplot(ab_esp_b[,17],beside=TRUE,names.arg=n_site, xlab="amphipode", ylab="MaxN",ylim=c(0,400))
-barplot_oursin<-barplot(ab_esp_b[,1],beside=TRUE,names.arg=n_site, xlab="oursins", ylab="MaxN",ylim=c(0,400))
-barplot_dollars<-barplot(ab_esp_b[,2],beside=TRUE,names.arg=n_site, xlab="dollars_sable", ylab="MaxN",ylim=c(0,400))
+barplot_amphipode<-barplot(ab_esp_b[,17],beside=TRUE,names.arg=n_site, xlab="Sites", ylab="Abondance maximale (MAxN)",main="Répartition de l'abondance des amphipodes",ylim=c(0,400))
+barplot_oursin<-barplot(ab_esp_b[,1],beside=TRUE,names.arg=n_site, xlab="Sites", ylab="Abondance maximale (MaxN)",main="Répartition de l'abondance des oursins",ylim=c(0,400))
+barplot_dollars<-barplot(ab_esp_b[,2],beside=TRUE,names.arg=n_site, xlab="Sites", ylab="Abondance maximale (MAxN)",main="Répartition de l'abondance des dollars de sable",ylim=c(0,400))
 
+#abondance totale
+ab_tot<-as.matrix(ab_esp[33,-c(1,5,19,21,28)])
+barplot_ab_tot<-barplot(ab_tot, las=2, ylim=c(0,3000),cex.axis=1,cex=0.8,ylab="Abondance totale", main="Répartition de l'abondance des espèces pour toutes les sites")
+
+#abondance par site
+# r_g<-as.matrix(sol[,c(3:7)])
+# colnames(r_g)<-c("p_sable","p_caillou","p_gravier","p_bloc","p_rochemère")
+barplot_r_g<-barplot(sol[,3], ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en sable")
+barplot_r_caillou<-barplot(sol[,4],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en caillou", beside=TRUE)
+barplot_r_gravier<-barplot(sol[,5],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en gravier", beside=TRUE)
+barplot_r_bloc<-barplot(sol[,6],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en bloc", beside=TRUE)
+barplot_r_rochemere<-barplot(sol[,7],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en roche mère", beside=TRUE)
+
+#abondance par site
+barplot_r_algue_r<-barplot(bio[,3],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en algues rouge", beside=TRUE)
+barplot_r_algue_b<-barplot(bio[,4],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en algues brune", beside=TRUE)
+barplot_r_algue_v<-barplot(bio[,5],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en algues verte", beside=TRUE)
+barplot_r_coralline<-barplot(bio[,6],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en corallines", beside=TRUE)
+barplot_r_coquillage<-barplot(bio[,7],names.arg=n_site, ylim=c(0,100),xlab="Sites",ylab="Pourcentage de recouvrement(%)", main="Pourcentage de recouvrement en coquillages", beside=TRUE)
+
+#abondance moyenne
+moy_ab<-colMeans(ab_esp_b)
+sd_ab<-apply(ab_esp_b,2,sd)
+
+barplot_abmoy<-barplot(moy_ab, las=2, ylim=c(0,200),cex.axis=1,cex=0.8,ylab="Abondance maximale moyenne (ind./site)", main="Abondance moyenne maximale par espèce")
+#moy_barplot<-barplot(moy_ab, xlab="espèces", ylab="SLA moyen (mm2/mg)",ylim=c(0,400))
+arrows(moy_barplot, moy_ab+sd_ab,moy_barplot, moy_ab - sd_ab, angle = 90,code=3, length=0.1) 
+#legend("topright",legend = rownames(moy_ab),pch = 15,col = 1:nrow(moy_ab), col=c("#eb8060","#a1e9f0"))
+
+#relation cluster rouge
+#install.packages("visreg")
+#library(visreg)
+install.packages("ggeffects")
+install.packages("effects")
+library(ggeffects)
+library(effects)
+install.packages("ggbiplot")
+library(ggbiplot)
+install.packages("ggboxplot")
+library(ggboxplot)
+rouge<-plot(ab_esp_b[,1]~table_env[,7]+table_env[,8])
+#g_rouge<-ggpredict(rouge)  
 
