@@ -624,9 +624,9 @@ abline(lm(table_env[,5]~ab_esp_b[,1]))
 rec_rm<-plot(table_env[,4]~ab_esp_b[,17], xlab="Abondance maximale d'amphipodes (MaxN/site)",ylab="Pourcentage de recouvrement en sable (%)",main="Relation entre le type de substrat et l'abondace des amphiopdes" )
 abline(lm(table_env[,4]~ab_esp_b[,17]))
 #coralline
-rec_bloc<-plot(table_env[,12]~ab_esp_b[,1], xlab="Abondance maximale d'oursins (MaxN/site)", ylab="Pourcentage de recouvrement en bloc (%)",main="Relation entre le recouvrement en coralline et l'abondace des oursins")
+rec_bloc<-plot(table_env[,12]~ab_esp_b[,1], xlab="Abondance maximale d'oursins (MaxN/site)", ylab="Pourcentage de recouvrement de coralline (%)",main="Relation entre le recouvrement en coralline et l'abondace des oursins")
 abline(lm(table_env[,12]~ab_esp_b[,1]))
-rec_bloc<-plot(table_env[,7]~table_env[,12], xlab="Abondance maximale d'oursins (MaxN/site)", ylab="Pourcentage de recouvrement en bloc (%)",main="Relation entre le type de substrat et l'abondace de coralline")
+rec_bloc<-plot(table_env[,7]~table_env[,12], xlab="Abondance maximale de coralline (MaxN/site)", ylab="Pourcentage de recouvrement en bloc (%)",main="Relation entre le type de substrat et l'abondace de coralline")
 abline(lm(table_env[,7]~table_env[,12]))
 
 #pie recouvrement sol
