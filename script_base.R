@@ -413,8 +413,9 @@ for (i in 1:nrow(ab_esp_bo)){
 NMDS_bo<-metaMDS(ab_esp_bo,distance="bray",k=2, noshare=TRUE, trymax=1000,trace=FALSE)
 sppscores(NMDS_bo)<-ab_esp_bo
 NMDS_bo
-ordiplot(NMDS_bo, type="t", main="Ordination selon la matrice présence-absence") 
-stressplot(NMDS_bo, main="stress de l'ordination présence-absence")
+summary(NMDS_bo)
+g_NMDS_bo<-ordiplot(NMDS_bo, type="t") 
+stressplot(NMDS_bo, main="stress de l'ordination pr�sence-absence")
 
 
 # s_bo<-scale(ab_esp_bo)
@@ -436,8 +437,8 @@ for (i in 1:nrow(ab_esp_r)){
 NMDS_r<-metaMDS(ab_esp_r, distance="bray",k=2, noshare=TRUE, trymax=1000, trace=FALSE)#bray par defaut
 sppscores(NMDS_r)<-ab_esp_r 
 NMDS_r
-ordiplot(NMDS_r, type="t", main="Ordination selon la matrice racine quatrième")
-stressplot(NMDS_r, main="Stress de l'ordination racine quatrième")
+ordiplot(NMDS_r, type="t")
+stressplot(NMDS_r)
 
 # s_r<-scale(ab_esp_r)
 # res_hc_r<-eclust(s_r,FUNcluster="hclust",method="bray")
@@ -450,8 +451,8 @@ stressplot(NMDS_r, main="Stress de l'ordination racine quatrième")
 NMDS_b<-metaMDS(ab_esp_b, noshare=TRUE, distance="bray",k=2, trymax=1000, trace=FALSE)
 sppscores(NMDS_b)<-ab_esp_b
 NMDS_b
-ordiplot(NMDS_b, type="t", main="Ordination selon la matrice de données brute")
-stressplot(NMDS_b, main="stress de l'ordination brute")
+ordiplot(NMDS_b, type="t")
+stressplot(NMDS_b)
 
 s_b<-scale(ab_esp_b)
 res_hc_b<-eclust(s_b,FUNcluster="hclust", method="bray")
@@ -550,7 +551,7 @@ for (i in 1:nrow(table_env)){
 #dbrda brute
 dbrda_b<-dbrda(ab_esp_b~temp_moy+sal_moy+pmoy_sable+pmoy_gravier+pmoy_caillou+pmoy_bloc+pmoy_rochemere+pmoy_algue_r+pmoy_algue_b+pmoy_algue_v+pmoy_coralline+pmoy_coquillage,data=table_env, distance="bray", scale=TRUE, sqrt.dsit=TRUE)
 #sppscores(dbrda_b)<-ab_esp_b
-plot(dbrda_b, main="Bray-Curtis selon les facteurs environnementaux",col=factor(table_env$groupe_b))
+plot(dbrda_b,col=factor(table_env$groupe_b))
 #legend("topleft",legend=levels(factor(table_env$groupe_b)),pch=19,col=factor(levels(factor(table_env$groupe_b))))
 #fviz_plot(dbrda_b,label="var", habillage=sol$g_sub ,addEllipses = TRUE, ellipse.level=0.95, col.ind=sol$g_sub)
 #anova.cca(dbrda_b)
