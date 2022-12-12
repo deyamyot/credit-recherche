@@ -415,7 +415,7 @@ sppscores(NMDS_bo)<-ab_esp_bo
 NMDS_bo
 summary(NMDS_bo)
 g_NMDS_bo<-ordiplot(NMDS_bo, type="t") 
-stressplot(NMDS_bo, main="stress de l'ordination pr�sence-absence")
+stressplot(NMDS_bo, main="stress de l'ordination pr?sence-absence")
 
 
 # s_bo<-scale(ab_esp_bo)
@@ -613,14 +613,16 @@ arrows(barplot_abmoy, moy_ab+sd_ab,barplot_abmoy, moy_ab - sd_ab, angle = 90,cod
 #regression pour imager conclusion
 #oursin
 dev.off()
-rec_rm<-plot(table_env[,8]~ab_esp_b[,1], xlab="Abondance maximale d'oursins (MaxN/site)",ylab="Pourcentage de recouvrement en roche mère (%)", main="Relation entre le type de substrat et l'abondace des oursins")
-abline(lm(table_env[,8]~ab_esp_b[,1]))
-rec_bloc<-plot(table_env[,7]~ab_esp_b[,1], xlab="Abondance maximale d'oursins (MaxN/site)", ylab="Pourcentage de recouvrement en bloc (%)",main="Relation entre le type de substrat et l'abondace des oursins")
-abline(lm(table_env[,7]~ab_esp_b[,1]))
-rec_rm<-plot(table_env[,6]~ab_esp_b[,1], xlab="Abondance maximale d'oursins (MaxN/site)",ylab="Pourcentage de recouvrement en caillou (%)" ,main="Relation entre le type de substrat et l'abondace des oursins")
-abline(lm(table_env[,6]~ab_esp_b[,1]))
-rec_rm<-plot(table_env[,5]~ab_esp_b[,1], xlab="Abondance maximale d'oursins (MaxN/site)",ylab="Pourcentage de recouvrement en gravier (%)",main="Relation entre le type de substrat et l'abondace des oursins" )
-abline(lm(table_env[,5]~ab_esp_b[,1]))
+rec_rm<-plot(ab_esp_b[,1]~table_env[,8], xlab="Pourcentage de recouvrement en roche mère (%)",ylab="Abondance maximale d'oursins (MaxN/site)", main="Relation entre le type de substrat et l'abondace des oursins")
+abline(lm(ab_esp_b[,1]~table_env[,8]))
+rec_bloc<-plot(ab_esp_b[,1]~table_env[,7], xlab="Pourcentage de recouvrement en bloc (%)", ylab="Abondance maximale d'oursins (MaxN/site)",main="Relation entre le type de substrat et l'abondace des oursins")
+abline(lm(ab_esp_b[,1]~table_env[,7]))
+rec_rm<-plot(ab_esp_b[,1]~table_env[,6], xlab="Pourcentage de recouvrement en caillou (%)",ylab="Abondance maximale d'oursins (MaxN/site)" ,main="Relation entre le type de substrat et l'abondace des oursins")
+abline(lm(ab_esp_b[,1]~table_env[,6]))
+rec_rm<-plot(ab_esp_b[,1]~table_env[,5], xlab="Pourcentage de recouvrement en gravier (%)",ylab="Abondance maximale d'oursins (MaxN/site)",main="Relation entre le type de substrat et l'abondace des oursins" )
+abline(lm(ab_esp_b[,1]~table_env[,5]))
+rec_rm<-plot(ab_esp_b[,1]~table_env[,4], xlab="Pourcentage de recouvrement en sable (%)",ylab="Abondance maximale d'oursins (MaxN/site)",main="Relation entre le type de substrat et l'abondace des oursins" )
+abline(lm(ab_esp_b[,1]~table_env[,4]))
 #amphipode
 rec_rm<-plot(table_env[,4]~ab_esp_b[,17], xlab="Abondance maximale d'amphipodes (MaxN/site)",ylab="Pourcentage de recouvrement en sable (%)",main="Relation entre le type de substrat et l'abondace des amphiopdes" )
 abline(lm(table_env[,4]~ab_esp_b[,17]))
